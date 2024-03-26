@@ -1,0 +1,17 @@
+papermage~=0.16.0
+layoutparser
+pysbd
+smashed
+decontext
+vila
+dspy-ai>=2.1.9
+openai~=1.13.3
+tiktoken~=0.4.0
+requests~=2.31.0
+tenacity~=8.2.3
+dspy~=0.0.7
+LanceDB
+langchain_community
+langchain_openai
+langchain_text_splitters
+langchain_community

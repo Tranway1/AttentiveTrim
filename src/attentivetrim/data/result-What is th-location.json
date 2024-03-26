@@ -1,0 +1,527 @@
+{
+    "question": "What is the main contribution of the paper?",
+    "files": [
+        {
+            "file": "p3044-liu_pm.json",
+            "total_chars": 79948,
+            "start": 7019,
+            "end": 7442
+        },
+        {
+            "file": "p1-zheng_pm.json",
+            "total_chars": 88024,
+            "start": 8211,
+            "end": 8704
+        },
+        {
+            "file": "p15-wang_pm.json",
+            "total_chars": 85629,
+            "start": 11162,
+            "end": 11518
+        },
+        {
+            "file": "p28-lin_pm.json",
+            "total_chars": 86531,
+            "start": 12666,
+            "end": 13147
+        },
+        {
+            "file": "p41-li_pm.json",
+            "total_chars": 57601,
+            "start": 9454,
+            "end": 9861
+        },
+        {
+            "file": "p51-gao_pm.json",
+            "total_chars": 77329,
+            "start": 10031,
+            "end": 10228
+        },
+        {
+            "file": "p65-patwa_pm.json",
+            "total_chars": 78856,
+            "start": 8197,
+            "end": 8320
+        },
+        {
+            "file": "p79-kerschbaum_pm.json",
+            "total_chars": 70998,
+            "start": 9549,
+            "end": 9820
+        },
+        {
+            "file": "p92-arora_pm.json",
+            "total_chars": 85877,
+            "start": 13518,
+            "end": 13846
+        },
+        {
+            "file": "p106-li_pm.json",
+            "total_chars": 84365,
+            "start": 12686,
+            "end": 13284
+        },
+        {
+            "file": "p119-li_pm.json",
+            "total_chars": 91967,
+            "start": 11304,
+            "end": 11797
+        },
+        {
+            "file": "p134-huang_pm.json",
+            "total_chars": 95952,
+            "start": 888,
+            "end": 1344
+        },
+        {
+            "file": "p148-zeng_pm.json",
+            "total_chars": 91757,
+            "start": 7329,
+            "end": 7714
+        },
+        {
+            "file": "p162-yuan_pm.json",
+            "total_chars": 84785,
+            "start": 8675,
+            "end": 9192
+        },
+        {
+            "file": "p175-xu_pm.json",
+            "total_chars": 53965,
+            "start": 10504,
+            "end": 11016
+        },
+        {
+            "file": "p184-cheng_pm.json",
+            "total_chars": 78940,
+            "start": 9590,
+            "end": 9771
+        },
+        {
+            "file": "p197-li_pm.json",
+            "total_chars": 97303,
+            "start": 12470,
+            "end": 12922
+        },
+        {
+            "file": "p211-xia_pm.json",
+            "total_chars": 85805,
+            "start": 8558,
+            "end": 9081
+        },
+        {
+            "file": "p225-howard_pm.json",
+            "total_chars": 107235,
+            "start": 936,
+            "end": 1358
+        },
+        {
+            "file": "p241-duan_pm.json",
+            "total_chars": 55335,
+            "start": 6944,
+            "end": 7427
+        },
+        {
+            "file": "p250-naik_pm.json",
+            "total_chars": 75634,
+            "start": 13268,
+            "end": 13481
+        },
+        {
+            "file": "p264-yao_pm.json",
+            "total_chars": 85639,
+            "start": 11693,
+            "end": 12121
+        },
+        {
+            "file": "p278-wu_pm.json",
+            "total_chars": 86824,
+            "start": 8727,
+            "end": 9283
+        },
+        {
+            "file": "p292-wu_pm.json",
+            "total_chars": 79162,
+            "start": 8997,
+            "end": 9454
+        },
+        {
+            "file": "p305-huang_pm.json",
+            "total_chars": 79037,
+            "start": 9448,
+            "end": 9764
+        },
+        {
+            "file": "p319-punter_pm.json",
+            "total_chars": 76566,
+            "start": 5246,
+            "end": 5639
+        },
+        {
+            "file": "p332-chung_pm.json",
+            "total_chars": 71506,
+            "start": 15494,
+            "end": 15871
+        },
+        {
+            "file": "p345-li_pm.json",
+            "total_chars": 87705,
+            "start": 9377,
+            "end": 9818
+        },
+        {
+            "file": "p359-zhang_pm.json",
+            "total_chars": 95427,
+            "start": 11106,
+            "end": 11577
+        },
+        {
+            "file": "p373-sun_pm.json",
+            "total_chars": 71172,
+            "start": 1228,
+            "end": 1267
+        },
+        {
+            "file": "p386-wang_pm.json",
+            "total_chars": 94924,
+            "start": 9013,
+            "end": 9561
+        },
+        {
+            "file": "p400-wang_pm.json",
+            "total_chars": 95660,
+            "start": 8616,
+            "end": 8844
+        },
+        {
+            "file": "p414-chen_pm.json",
+            "total_chars": 77628,
+            "start": 13929,
+            "end": 14533
+        },
+        {
+            "file": "p427-chen_pm.json",
+            "total_chars": 83319,
+            "start": 5569,
+            "end": 6106
+        },
+        {
+            "file": "p441-cao_pm.json",
+            "total_chars": 89062,
+            "start": 6711,
+            "end": 7136
+        },
+        {
+            "file": "p455-chen_pm.json",
+            "total_chars": 92854,
+            "start": 9381,
+            "end": 9749
+        },
+        {
+            "file": "p469-hildred_pm.json",
+            "total_chars": 81555,
+            "start": 8121,
+            "end": 8575
+        },
+        {
+            "file": "p483-zhang_pm.json",
+            "total_chars": 84852,
+            "start": 6672,
+            "end": 7026
+        },
+        {
+            "file": "p497-singh_pm.json",
+            "total_chars": 75786,
+            "start": 8199,
+            "end": 8650
+        },
+        {
+            "file": "p511-schonberger_pm.json",
+            "total_chars": 94082,
+            "start": 8426,
+            "end": 8884
+        },
+        {
+            "file": "p525-musleh_pm.json",
+            "total_chars": 88314,
+            "start": 418,
+            "end": 798
+        },
+        {
+            "file": "p539-zhang_pm.json",
+            "total_chars": 82009,
+            "start": 13591,
+            "end": 14147
+        },
+        {
+            "file": "p553-petralia_pm.json",
+            "total_chars": 60933,
+            "start": 6910,
+            "end": 7471
+        },
+        {
+            "file": "p563-wooders_pm.json",
+            "total_chars": 77181,
+            "start": 8166,
+            "end": 8680
+        },
+        {
+            "file": "p577-huang_pm.json",
+            "total_chars": 87379,
+            "start": 9797,
+            "end": 10282
+        },
+        {
+            "file": "p591-najafi_pm.json",
+            "total_chars": 82160,
+            "start": 10506,
+            "end": 10737
+        },
+        {
+            "file": "p604-zhang_pm.json",
+            "total_chars": 74712,
+            "start": 10632,
+            "end": 10778
+        },
+        {
+            "file": "p617-liu_pm.json",
+            "total_chars": 71227,
+            "start": 6851,
+            "end": 7131
+        },
+        {
+            "file": "p630-wang_pm.json",
+            "total_chars": 102816,
+            "start": 11098,
+            "end": 11557
+        },
+        {
+            "file": "p643-zhao_pm.json",
+            "total_chars": 5893,
+            "start": 1056,
+            "end": 1362
+        },
+        {
+            "file": "p644-siddiqui_pm.json",
+            "total_chars": 82124,
+            "start": 10266,
+            "end": 10783
+        },
+        {
+            "file": "p657-gao_pm.json",
+            "total_chars": 81272,
+            "start": 11043,
+            "end": 11493
+        },
+        {
+            "file": "p671-zhang_pm.json",
+            "total_chars": 84480,
+            "start": 8122,
+            "end": 8515
+        },
+        {
+            "file": "p685-stockinger_pm.json",
+            "total_chars": 84583,
+            "start": 10081,
+            "end": 10451
+        },
+        {
+            "file": "p699-chen_pm.json",
+            "total_chars": 83916,
+            "start": 15297,
+            "end": 15633
+        },
+        {
+            "file": "p712-nagrecha_pm.json",
+            "total_chars": 86999,
+            "start": 17075,
+            "end": 17529
+        },
+        {
+            "file": "p726-cai_pm.json",
+            "total_chars": 88803,
+            "start": 1401,
+            "end": 1683
+        },
+        {
+            "file": "p740-reiner_pm.json",
+            "total_chars": 81769,
+            "start": 6112,
+            "end": 6443
+        },
+        {
+            "file": "p766-cheng_pm.json",
+            "total_chars": 79274,
+            "start": 9120,
+            "end": 9658
+        },
+        {
+            "file": "p780-yang_pm.json",
+            "total_chars": 97585,
+            "start": 8828,
+            "end": 9180
+        },
+        {
+            "file": "p794-zhu_pm.json",
+            "total_chars": 91201,
+            "start": 12483,
+            "end": 12943
+        },
+        {
+            "file": "p808-zhang_pm.json",
+            "total_chars": 98205,
+            "start": 9621,
+            "end": 9916
+        },
+        {
+            "file": "p823-zhao_pm.json",
+            "total_chars": 77587,
+            "start": 7706,
+            "end": 8177
+        },
+        {
+            "file": "p836-zhuang_pm.json",
+            "total_chars": 82939,
+            "start": 10565,
+            "end": 10667
+        },
+        {
+            "file": "p849-cong_pm.json",
+            "total_chars": 79938,
+            "start": 6994,
+            "end": 7518
+        },
+        {
+            "file": "p863-kim_pm.json",
+            "total_chars": 86601,
+            "start": 1906,
+            "end": 2141
+        },
+        {
+            "file": "p877-mohr-daurat_pm.json",
+            "total_chars": 85162,
+            "start": 5438,
+            "end": 5818
+        },
+        {
+            "file": "p891-zhi_pm.json",
+            "total_chars": 72954,
+            "start": 12365,
+            "end": 12978
+        },
+        {
+            "file": "p904-cheng_pm.json",
+            "total_chars": 53055,
+            "start": 5529,
+            "end": 6180
+        },
+        {
+            "file": "p912-zhou_pm.json",
+            "total_chars": 82614,
+            "start": 8377,
+            "end": 8646
+        },
+        {
+            "file": "p926-zhu_pm.json",
+            "total_chars": 84338,
+            "start": 9383,
+            "end": 9844
+        },
+        {
+            "file": "p939-zhang_pm.json",
+            "total_chars": 78183,
+            "start": 11661,
+            "end": 12064
+        },
+        {
+            "file": "p952-whang_pm.json",
+            "total_chars": 83846,
+            "start": 10693,
+            "end": 10860
+        },
+        {
+            "file": "p966-hu_pm.json",
+            "total_chars": 76742,
+            "start": 8752,
+            "end": 9216
+        },
+        {
+            "file": "p980-zhu_pm.json",
+            "total_chars": 98999,
+            "start": 13329,
+            "end": 13826
+        },
+        {
+            "file": "p994-li_pm.json",
+            "total_chars": 66678,
+            "start": 4579,
+            "end": 4857
+        },
+        {
+            "file": "p1020-xing_pm.json",
+            "total_chars": 86137,
+            "start": 11147,
+            "end": 11612
+        },
+        {
+            "file": "p1034-wen_pm.json",
+            "total_chars": 71246,
+            "start": 10254,
+            "end": 10664
+        },
+        {
+            "file": "p1047-zou_pm.json",
+            "total_chars": 83456,
+            "start": 11358,
+            "end": 11721
+        },
+        {
+            "file": "p1060-gao_pm.json",
+            "total_chars": 74924,
+            "start": 940,
+            "end": 1350
+        },
+        {
+            "file": "p1073-wu_pm.json",
+            "total_chars": 59656,
+            "start": 438,
+            "end": 612
+        },
+        {
+            "file": "p1081-han_pm.json",
+            "total_chars": 56338,
+            "start": 8243,
+            "end": 8867
+        },
+        {
+            "file": "p1091-lu_pm.json",
+            "total_chars": 88706,
+            "start": 8879,
+            "end": 9433
+        },
+        {
+            "file": "p1105-chen_pm.json",
+            "total_chars": 80069,
+            "start": 7887,
+            "end": 8257
+        },
+        {
+            "file": "p1119-wang_pm.json",
+            "total_chars": 76355,
+            "start": 8088,
+            "end": 8523
+        },
+        {
+            "file": "p1132-gao_pm.json",
+            "total_chars": 78904,
+            "start": 9601,
+            "end": 10011
+        },
+        {
+            "file": "p1146-mai_pm.json",
+            "total_chars": 74960,
+            "start": 16619,
+            "end": 17160
+        }
+    ]
+}
