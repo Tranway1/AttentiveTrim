@@ -5,6 +5,7 @@ from textwrap import indent
 
 import dspy
 import dsp
+from dspy.evaluate import AnswerCorrectnessSignature
 from papermage import Document
 
 
@@ -36,6 +37,15 @@ class dspyCOT(dspy.Module):
         context = context
         answer = self.generate_answer(context=context, question=question)
         return answer
+
+
+class VeriCorrectness(dspy.Module):
+    def __init__(self, f_signature=AnswerCorrectnessSignature):
+        super().__init__()
+        self.evaluate_correctness = dspy.ChainOfThought(f_signature)
+
+    def forward(self, question, gold_answer, predicted_answer):
+        return self.evaluate_correctness(question=question, gold_answer=gold_answer, predicted_answer=predicted_answer)
 
 
 def gen_signature_class(instruction, context_desc, question_desc, answer_desc):

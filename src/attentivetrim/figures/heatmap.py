@@ -2,8 +2,9 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
+task="test-authors"
 ranges = []
-with open("../data/result-What is th-location.json", "rb") as file:
+with open("../data/test_v16_inputfile100-result-What is the aut-0.1-location.json", "rb") as file:
     data = file.read()
     json_obj = json.loads(data)
 
@@ -18,7 +19,8 @@ overall_min = 0.0
 overall_max = 1.0
 
 # Create a frequency matrix based on the ranges
-resolution = 0.01
+resolution = 0.001
+index_range =  1/resolution
 bins = np.arange(overall_min, overall_max, resolution)
 frequency_matrix = np.zeros(len(bins)-1)
 
@@ -45,7 +47,7 @@ cbar = plt.colorbar(heatmap, orientation='vertical', pad=0.05)
 cbar.set_label('Frequency')
 
 plt.tight_layout()
-plt.savefig("../data/heatmap.pdf")
+plt.savefig("../data/heatmap-"+task+".pdf")
 
 # draw a line chart with x from 0 to 1 and y as the frequency_matrix
 plt.figure(figsize=(5, 2))
@@ -54,4 +56,10 @@ plt.xlabel("Character position")
 plt.ylabel("Frequency")
 plt.title(json_obj["question"])
 plt.tight_layout()
-plt.savefig("../data/linechart.pdf")
+plt.savefig("../data/linechart-"+task+".pdf")
+
+# save the index and the frequency_matrix to a csv file
+np.savetxt("../data/frequency-"+task+".csv",
+           np.column_stack((bins[:-1] * index_range, frequency_matrix)),
+           delimiter=",",
+           fmt='%.3f')

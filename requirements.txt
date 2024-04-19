@@ -10,8 +10,15 @@ tiktoken~=0.4.0
 requests~=2.31.0
 tenacity~=8.2.3
 dspy~=0.0.7
-LanceDB
+LanceDB~=0.6.6
 langchain_community
 langchain_openai
 langchain_text_splitters
 langchain_community
+
+torch~=2.2.2
+transformers~=4.39.3
+scikit-learn~=1.4.1.post1
+numpy~=1.26.4
+matplotlib~=3.8.3
+pandas~=2.2.1

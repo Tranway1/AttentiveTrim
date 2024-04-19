@@ -9,12 +9,25 @@ from papermage import Document
 
 from src.attentivetrim.tool.dspy_interface import dspyCOT, QuestionOverPaper
 
+QUESTIONS = ["What is the main contribution of the paper?",
+             "What is the authors of the paper?",
+             "What is the paper title?"]
+
 class SingleQuestionOverPaper(dspy.Signature):
     """Answer question(s) about a scientific paper."""
 
     context = dspy.InputField(desc="contains full text of the paper, including author, institution, title, and body")
     question = dspy.InputField(desc="one question about the paper")
-    answer = dspy.OutputField(desc="print the answer only and print None if you cannot find a answer. Please do not helucinate the answer")
+    answer = dspy.OutputField(desc="print the answer close to the original text as you can, and print 'None' if an answer cannot be found. Please do not helucinate the answer")
+
+
+class ValidationWithTestAndGroundtruth(dspy.Signature):
+    """Compare the test result with the groundtruth"""
+
+    groundturth = dspy.InputField(desc="statement of a scientific paper as groundtruth")
+    test = dspy.InputField(desc="another statement of a scientific paper as a test")
+    answer = dspy.OutputField(desc="Please print the result of the comparison. If the test is the sementically similar to the groundtruth, print 'True'. Otherwise, print 'False'.")
+
 
 
 def get_groundtruth (file_path, question):
@@ -28,7 +41,7 @@ def get_groundtruth (file_path, question):
     dspy.settings.configure(lm=turbo)
 
     # Load document
-    with open('/Users/chunwei/pvldb_1-16/17/'+file_path) as f_in:
+    with open('/Users/chunwei/pvldb_1-16/16/'+file_path) as f_in:
         doc_dict = json.load(f_in)
         doc = Document.from_json(doc_dict)
 
@@ -36,7 +49,7 @@ def get_groundtruth (file_path, question):
     context = doc_dict["symbols"]
 
     # Generate prediction
-    cot = dspyCOT(QuestionOverPaper)
+    cot = dspyCOT(SingleQuestionOverPaper)
     pred = cot(question, context)
     return pred.answer
 
@@ -58,12 +71,12 @@ def run_file_batch (list_of_files, question):
 
 
 if __name__ == "__main__":
-    list_file = "../data/inputfile.txt"
+    list_file = "../data/test_v16_inputfile100.txt"
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
-    question = "What is the main contribution of the paper?"
+    question = QUESTIONS[0]
     json_obj = run_file_batch(list_of_files, question)
     json_string = json.dumps(json_obj, indent=4)
-    with open(f'../data/result-{question[:10]}.json', 'w') as f:
+    with open(f'../data/test_v16_inputfile100-result-{question[:15]}.json', 'w') as f:
         f.write(json_string)

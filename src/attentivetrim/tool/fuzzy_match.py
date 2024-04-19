@@ -22,7 +22,7 @@ def best_substring_match(query, string):
 
 
 if __name__ == "__main__":
-    grd_file ="../data/result-What is th.json"
+    grd_file ="../data/test_v16_inputfile100-result-What is the aut-0.1.json"
     res_file = grd_file.replace(".json", "-location.json")
     with open(grd_file) as f:
         json_obj = json.loads(f.read())
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     for extraction  in list_of_file_extraction:
         file_path = extraction["file"]
         query = extraction["groundtruth"]
-        with open('/Users/chunwei/pvldb_1-16/17/' + file_path) as f_in:
+        with open('/Users/chunwei/pvldb_1-16/16/' + file_path) as f_in:
             doc_dict = json.load(f_in)
         string = doc_dict["symbols"]
         total_chars = len(string)
