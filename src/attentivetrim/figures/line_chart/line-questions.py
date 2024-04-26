@@ -21,8 +21,9 @@ json_file_series = {
         "results-What is the mai-0.05-acc.json",
         "results-What is the mai-0.1-acc.json",
         "results-What is the mai-0.15-acc.json",
-        "results-What is the mai-0.2-acc.json",
-        "results-What is the mai-0.4-acc-full.json"
+        "results-What is the mai-0.2-acc-full.json",
+        "results-What is the mai-0.4-acc-full.json",
+        "results-What is the mai-0.9-acc-full.json"
     ]
 }
 
@@ -64,9 +65,9 @@ for series_label, json_files in json_file_series.items():
 # Customize the plot
 plt.xlabel('Input proportion of the paper')
 plt.ylabel('Matched Ratio')
-plt.title('Matched Ratio vs. Input Ratio')
+plt.title('Accuracy for paper questions')
 plt.legend()
 plt.grid(True)
 
 # Show the plot
-plt.savefig('../../figures/figure/line-questions.pdf')
+plt.savefig('../../figures/figure/line-questions-wide.pdf')

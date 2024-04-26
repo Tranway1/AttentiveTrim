@@ -50,7 +50,8 @@ json_file_series = {
         "results-What is the mai-0.1-acc-local-full.json",
         "results-What is the mai-0.15-acc-local-full.json",
         "results-What is the mai-0.2-acc-local-full.json",
-        "results-What is the mai-0.4-acc-local-full.json"
+        "results-What is the mai-0.4-acc-local-full.json",
+        "results-What is the mai-0.9-acc-local-full.json"
     ]
 }
 

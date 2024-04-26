@@ -6,7 +6,7 @@ from textwrap import indent
 import dsp
 import dspy
 
-from src.attentivetrim.tool.dspy_interface import dspyCOT, VeriCorrectness
+from dspy_interface import dspyCOT, VeriCorrectness
 
 
 class ValidationWithTestAndGroundTruth(dspy.Signature):
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    results_file = '../data/results-What is the mai-0.4.json'
+    results_file = '../data/gpt4/results-What is the mai-0.4.json'
     groundtruth_file = '../data/test_v16_inputfile100-result-What is the mai.json'
     acc_file = results_file.replace(".json", "-acc-full.json")
     evaluate_results(results_file, groundtruth_file, acc_file)

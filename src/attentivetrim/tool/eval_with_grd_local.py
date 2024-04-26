@@ -7,7 +7,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 import dsp
 import dspy
 
-from src.attentivetrim.tool.dspy_interface import dspyCOT, VeriCorrectness
+from dspy_interface import dspyCOT, VeriCorrectness
+from rouge_score import rouge_scorer
+
+# Initialize the ROUGE scorer
+scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
 
 
 class ValidationWithTestAndGroundTruth(dspy.Signature):
@@ -48,14 +52,37 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
         test = result["result"]
         ground_truth = next((item["groundtruth"] for item in groundtruth_data if item["file"] == file), None)
         if ground_truth:
+            # Calculate ROUGE scores
+            rouge_scores = scorer.score(ground_truth, test)
+
+            # Calculate cosine similarity
             pair = [ground_truth, test]
             pair_embeddings = model.encode(pair)
             cos_sim = cosine_similarity(
                 [pair_embeddings[0]],
                 [pair_embeddings[1]]
             )
-            print("file:", file, " groundtruth: ", ground_truth, " result:", test, " match:", float(cos_sim[0][0]))
-            acc_res["files"].append({"file": file, "groundtruth": ground_truth, "result": test, "match": float(cos_sim[0][0]), "rationale": "cosine similarity"})
+
+            # Log results
+            print("file:", file,
+                  "groundtruth:", ground_truth,
+                  "result:", test,
+                  "match:", min(float(cos_sim[0][0]),1.0),
+                  "ROUGE-1:", rouge_scores['rouge1'],
+                  "ROUGE-2:", rouge_scores['rouge2'],
+                  "ROUGE-L:", rouge_scores['rougeL'])
+
+            # Append results to acc_res
+            acc_res["files"].append({
+                "file": file,
+                "groundtruth": ground_truth,
+                "result": test,
+                "match": min(float(cos_sim[0][0]),1.0),
+                "ROUGE-1": rouge_scores['rouge1'].fmeasure,
+                "ROUGE-2": rouge_scores['rouge2'].fmeasure,
+                "ROUGE-L": rouge_scores['rougeL'].fmeasure,
+                "rationale": "cosine similarity and ROUGE scores"
+            })
     acc_res["total_matches"] = 0
     acc_res["total_files"] = len(results["files"])
     with open(acc_file, "w") as f:
@@ -68,7 +95,29 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    results_file = '../data/results-What is the pap-0.001.json'
-    groundtruth_file = '../data/test_v16_inputfile100-result-What is the pap-0.3.json'
-    acc_file = results_file.replace(".json", "-acc-local-0.1.json")
-    evaluate_results(results_file, groundtruth_file, acc_file)
+    tests = [
+        ["../data/gpt4/results-What is the pap-0.001.json",
+         "../data/gpt4/results-What is the pap-0.005.json",
+         "../data/gpt4/results-What is the pap-0.05.json",
+         "../data/gpt4/results-What is the pap-0.3.json",],
+        ["../data/gpt4/results-What is the aut-0.005.json",
+         "../data/gpt4/results-What is the aut-0.01.json",
+         "../data/gpt4/results-What is the aut-0.05.json",
+         "../data/gpt4/results-What is the aut-0.1.json"],
+        ["../data/gpt4/results-What is the mai-0.05.json",
+         "../data/gpt4/results-What is the mai-0.1.json",
+         "../data/gpt4/results-What is the mai-0.15.json",
+         "../data/gpt4/results-What is the mai-0.2.json",
+         "../data/gpt4/results-What is the mai-0.4.json",
+         "../data/gpt4/results-What is the mai-0.9.json"]
+    ]
+
+    grds = ["../data/test_v16_inputfile100-result-What is the pap-0.3.json",
+            "../data/test_v16_inputfile100-result-What is the aut-0.1.json",
+            "../data/test_v16_inputfile100-result-What is the mai.json",
+            "../data/test_v16_inputfile100-result-What is the mai.json"]
+    idx = 2
+    for results_file in tests[idx]:
+        groundtruth_file = grds[idx]
+        acc_file = results_file.replace(".json", "-acc-local-full.json")
+        evaluate_results(results_file, groundtruth_file, acc_file)

@@ -5,7 +5,7 @@ import time
 import dsp
 import dspy
 import histogram_range
-from src.attentivetrim.tool.dspy_interface import dspyCOT
+from dspy_interface import dspyCOT
 
 
 
@@ -74,9 +74,10 @@ if __name__ == "__main__":
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
-    question = QUESTIONS[1]
-    hist_file = "../data/frequency-test-authors.csv"
-    budget = 0.01
+    question = QUESTIONS[0]
+    hist_file = "../data/frequency-test-contribution.csv"
+    budget = 0.2
+    print("question:", question, "hist_file:", hist_file, "budget:", budget)
     results = run_file_batch(list_of_files, question, hist_file, budget=budget)
     json_string = json.dumps(results, indent=4)
     with open(f'../data/results-{question[:15]}-{budget}.json', 'w') as f:
