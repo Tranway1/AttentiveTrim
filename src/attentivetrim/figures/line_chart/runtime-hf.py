@@ -72,8 +72,8 @@ for question, files in json_file_series.items():
     plt.xticks(np.arange(1, len(labels) + 1), labels)
 
     # Customize the plot
-    plt.xlabel('Configuration')
-    plt.ylabel('Duration (s)')
+    plt.xlabel('Input proportion of the paper')
+    plt.ylabel('Inference Runtime (s)')
     plt.title(f'Violin Plot of Duration for {question}')
     plt.grid(True)
 

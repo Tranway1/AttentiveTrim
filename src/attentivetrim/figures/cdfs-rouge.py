@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import os
 
 
+TARGET="ROUGE-L"
 # Function to parse a JSON file and extract the "match" values
 def extract_match_values(json_file):
     with open(json_file, 'r') as file:
         data = json.load(file)
-        match_values = [item['match'] for item in data['files']]
+        match_values = [item[TARGET] for item in data['files']]
         # if value > 1, set it to 1
         match_values = [min(val, 1.0) for val in match_values]
     return match_values
@@ -29,15 +30,15 @@ def plot_cdf(data, label):
     plt.plot(sorted_data, cdf, label=label)
 
 
-base_dir = "../data/local-full/"
+base_dir = "../data/gpt4/"
 
 # Define the mapping of questions to file arrays
 json_file_series = {
     "title": [
-        "results-What is the pap-0.001-acc-local-0.1.json",
-        "results-What is the pap-0.005-acc-local-0.1.json",
-        "results-What is the pap-0.05-acc-local-0.1.json",
-        "results-What is the pap-0.3-acc-local-0.1.json"
+        "results-What is the pap-0.001-acc-local-0.3.json",
+        "results-What is the pap-0.005-acc-local-0.3.json",
+        "results-What is the pap-0.05-acc-local-0.3.json",
+        "results-What is the pap-0.3-acc-local-0.3.json"
     ],
     "authors": [
         "results-What is the aut-0.005-acc-local-0.1.json",
@@ -48,7 +49,7 @@ json_file_series = {
     "contribution": [
         "results-What is the mai-0.05-acc-local-full.json",
         "results-What is the mai-0.1-acc-local-full.json",
-        # "results-What is the mai-0.15-acc-local-full.json",
+        "results-What is the mai-0.15-acc-local-full.json",
         "results-What is the mai-0.2-acc-local-full.json",
         "results-What is the mai-0.4-acc-local-full.json",
         "results-What is the mai-0.9-acc-local-full.json"
@@ -66,7 +67,7 @@ for question, files in json_file_series.items():
         plot_cdf(match_values, label=series_label)
 
     # Customize the plot
-    plt.xlabel('Similarity Score')
+    plt.xlabel(TARGET)
     plt.ylabel('CDF')
     plt.title(f'CDF for {question}')
     plt.legend(loc='best')
@@ -74,4 +75,4 @@ for question, files in json_file_series.items():
     plt.xlim(1.01, 0.0)  # Set the x-axis limits to reverse the axis
 
     # Save the plot for each question
-    plt.savefig(f'../figures/figure/cdf-{question}.pdf')
+    plt.savefig(f'../figures/figure/cdf-{question}-{TARGET}.pdf')
