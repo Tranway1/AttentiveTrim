@@ -4,14 +4,17 @@ import time
 
 import dsp
 import dspy
-import src.attentivetrim.tool.histogram_range
+from src.attentivetrim.tool import histogram_range
 from src.attentivetrim.tool.dspy_interface import dspyCOT
 
 
-
-QUESTIONS = ["What is the main contribution of the paper?",
+QUESTIONS = ["What is the paper title?",
              "What is the authors of the paper?",
-             "What is the paper title?"]
+             "What is the main contribution of the paper?"]
+
+HISTS = ["../data/frequency-test-title.csv",
+            "../data/frequency-test-authors.csv",
+            "../data/frequency-test-contribution.csv"]
 
 
 class SingleQuestionOverSample(dspy.Signature):
@@ -19,7 +22,9 @@ class SingleQuestionOverSample(dspy.Signature):
 
     context = dspy.InputField(desc="contains a snippet of the paper, including the most possible answer to the question.")
     question = dspy.InputField(desc="one question about the paper")
-    answer = dspy.OutputField(desc="print the answer close to the original text as you can, and print 'None' if an answer cannot be found. Please do not helucinate the answer")
+    answer = dspy.OutputField(
+        desc="print the answer close to the original text as you can, and print 'None' if an answer cannot be found or the answer is truncated in the given context. Please do not helucinate the answer")
+    # answer = dspy.OutputField(desc="print the answer close to the original text as you can, and print 'None' if an answer cannot be found. Please do not helucinate the answer")
 
 
 
@@ -36,10 +41,7 @@ def get_test_result(file_path, question, sr, er):
     end = int(er * test_len)
 
     print("character start:", start, "end:", end)
-    sample = context[start:end+1]
-    if sr == er:
-        end = int((er+0.001) * test_len)-1
-        sample = context[start:end+1]
+    sample = context[start:end]
     print("sample size:", len(sample))
 
     # Generate prediction
@@ -69,14 +71,15 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
+    idx = 1
 
     list_file = "../data/test_v16_inputfile100.txt"
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
-    question = QUESTIONS[0]
-    hist_file = "../data/frequency-test-contribution.csv"
-    budget = 0.2
+    question = QUESTIONS[idx]
+    hist_file = HISTS[idx]
+    budget = 0.005
     print("question:", question, "hist_file:", hist_file, "budget:", budget)
     results = run_file_batch(list_of_files, question, hist_file, budget=budget)
     json_string = json.dumps(results, indent=4)

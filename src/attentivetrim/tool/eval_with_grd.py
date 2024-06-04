@@ -9,6 +9,19 @@ import dspy
 from dspy_interface import dspyCOT, VeriCorrectness
 
 
+
+QUESTIONS = ["What is the paper title?",
+             "What is the authors of the paper?",
+             "What is the main contribution of the paper?"]
+
+HISTS = ["../data/frequency-test-title.csv",
+            "../data/frequency-test-authors.csv",
+            "../data/frequency-test-contribution.csv"]
+
+GRDS = ["../data/test_v16_inputfile100-result-What is the pap-0.3.json",
+            "../data/test_v16_inputfile100-result-What is the aut-0.1.json",
+            "../data/test_v16_inputfile100-result-What is the mai.json"]
+
 class ValidationWithTestAndGroundTruth(dspy.Signature):
     """Compare the test result with the ground truth"""
 
@@ -26,7 +39,6 @@ class ValidationCorrectnessSignature(dspy.Signature):
 
 def evaluate_results(results_file, groundtruth_file, acc_file):
 
-
     with open(results_file) as fr:
         results = json.load(fr)
 
@@ -37,6 +49,11 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
     acc_res = {"question": grd_json["question"], "files": []}
     question = grd_json["question"]
     print("Question: ", question)
+    total_budget = 0
+    if "fallback" in results_file:
+        for entry in results["files"]:
+            total_budget += entry["budget"]
+
 
     verification_cot = VeriCorrectness(ValidationCorrectnessSignature)
     cnt = 0
@@ -55,9 +72,11 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
             acc_res["files"].append({"file": file, "groundtruth": ground_truth, "result": test, "match": match, "rationale": pred.rationale})
     acc_res["total_matches"] = cnt
     acc_res["total_files"] = len(results["files"])
+    acc_res["total_avg_budget"] = total_budget/len(results["files"])
     with open(acc_file, "w") as f:
         f.write(json.dumps(acc_res, indent=4))
     print(f"Total matches: {cnt} out of {len(results['files'])}")
+    print(f"Total avg budget: {total_budget/len(results['files'])}")
 
 if __name__ == "__main__":
     if 'OPENAI_API_KEY' not in os.environ:
@@ -65,7 +84,10 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    results_file = '../data/gpt4/results-What is the mai-0.4.json'
-    groundtruth_file = '../data/test_v16_inputfile100-result-What is the mai.json'
+    idx = 1
+    budget = 0.005
+    question = QUESTIONS[idx]
+    results_file = f'../data/results-fallback-{question[:15]}-{budget}.json'
+    groundtruth_file = GRDS[idx]
     acc_file = results_file.replace(".json", "-acc-full.json")
     evaluate_results(results_file, groundtruth_file, acc_file)

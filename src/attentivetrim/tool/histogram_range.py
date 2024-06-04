@@ -63,7 +63,7 @@ def find_best_range(values, budget, trim_zeros=True):
             best_start = best_start - (best_end-n+1)
             best_end = n-1
 
-    return best_start, best_end
+    return best_start, best_end+1
 
 
 def get_range_from_hist(file_path, range_budget, resolution=0.001, trim_zeros=True):
