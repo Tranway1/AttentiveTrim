@@ -43,12 +43,15 @@ def get_groundtruth (file_path, question):
     dspy.settings.configure(lm=turbo)
 
     # Load document
-    with open('/Users/chunwei/pvldb_1-16/16/'+file_path) as f_in:
+    with open(file_path) as f_in:
         doc_dict = json.load(f_in)
         doc = Document.from_json(doc_dict)
 
 
     context = doc_dict["symbols"]
+    length = len(context)
+    sample_len = int(length * 0.3)
+    context = context[:sample_len]
 
     # Generate prediction
     cot = dspyCOT(SingleQuestionOverPaper)
@@ -73,12 +76,12 @@ def run_file_batch (list_of_files, question):
 
 
 if __name__ == "__main__":
-    list_file = "../data/test_v16_inputfile100.txt"
+    list_file = "../../data/test_diverse_inputfile100.txt"
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
-    question = QUESTIONS[3]
+    question = QUESTIONS[0]
     json_obj = run_file_batch(list_of_files, question)
     json_string = json.dumps(json_obj, indent=4)
-    with open(f'../data/test_v16_inputfile100-result-{question[:15]}.json', 'w') as f:
+    with open(f'../data/test_diverse_inputfile100-result-{question[:15]}-0.3.json', 'w') as f:
         f.write(json_string)

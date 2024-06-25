@@ -1,7 +1,7 @@
+
 import json
 import matplotlib.pyplot as plt
 import os
-
 
 # Define multiple arrays of JSON files, each array is a different series
 json_file_series = {
@@ -30,6 +30,19 @@ json_file_series = {
 # Base directory where JSON files are stored
 base_dir = "../../data/local-full/"
 
+# Fallback JSON files
+fallback_files = {
+    "title": "results-fallback-What is the pap-0.001-acc-full.json",
+    "authors": "results-fallback-What is the aut-0.005-acc-full.json",
+    "contribution": "results-fallback-What is the mai-0.05-acc-full.json"
+}
+
+# Colors for each series
+series_colors = {
+    "title": "blue",
+    "authors": "green",
+    "contribution": "red"
+}
 
 # Function to extract matched ratio from a JSON file
 def extract_matched_ratio(json_file):
@@ -40,27 +53,32 @@ def extract_matched_ratio(json_file):
         matched_ratio = total_matches / total_files
     return matched_ratio
 
-
 # Plotting function for each series
 def plot_series(json_files, series_label):
     x_values = []
     y_values = []
     for json_file in json_files:
-        # Extract the parameter value from the file name
         param_value = float(json_file.split("-acc")[0].split("-")[-1])
         x_values.append(param_value)
-
-        # Calculate the matched ratio
         matched_ratio = extract_matched_ratio(base_dir + json_file)
         y_values.append(matched_ratio)
+    plt.plot(x_values, y_values, marker='o', linestyle='-', label=series_label, color=series_colors[series_label])
 
-    # Plotting the line chart for the current series
-    plt.plot(x_values, y_values, marker='o', linestyle='-', label=series_label)
-
+# Function to plot fallback data points
+def plot_fallback_points():
+    fallback_dir = "../../data/fallback/"
+    for label, json_file in fallback_files.items():
+        matched_ratio = extract_matched_ratio(fallback_dir + json_file)
+        param_value = float(json_file.split("-acc")[0].split("-")[-1])
+        plt.scatter([param_value], [matched_ratio], marker='*', s=100, label=f"{label} fallback", color=series_colors[label])
+        plt.annotate(f"{label} fallback", (param_value, matched_ratio), textcoords="offset points", xytext=(0,10), ha='center')
 
 # Process and plot each series
 for series_label, json_files in json_file_series.items():
     plot_series(json_files, series_label)
+
+# Plot fallback points
+plot_fallback_points()
 
 # Customize the plot
 plt.xlabel('Input proportion of the paper')
@@ -70,4 +88,4 @@ plt.legend()
 plt.grid(True)
 
 # Show the plot
-plt.savefig('../../figures/figure/line-questions-wide.pdf')
+plt.savefig('../../figures/figure/line-questions-lines-points.pdf')

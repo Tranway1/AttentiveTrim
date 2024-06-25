@@ -45,5 +45,5 @@ def process_pdf_directory(directory_path):
             print(f"Saved extracted data to {json_path}")
 
 # Example usage
-directory_path = '/Users/chunwei/pvldb_1-16/16'
+directory_path = '/Users/chunwei/sigmod/sigmod2024'
 process_pdf_directory(directory_path)

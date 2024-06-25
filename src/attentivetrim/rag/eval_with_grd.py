@@ -6,12 +6,12 @@ from textwrap import indent
 import dsp
 import dspy
 
-from dspy_interface import dspyCOT, VeriCorrectness
+from src.attentivetrim.tool.dspy_interface import dspyCOT, VeriCorrectness
 
 
 
 QUESTIONS = ["What is the paper title?",
-             "What is the authors of the paper?",
+             "Who are the authors of the paper?",
              "What is the main contribution of the paper?"]
 
 HISTS = ["../data/frequency-test-title.csv",
@@ -22,6 +22,9 @@ GRDS = ["../data/test_v16_inputfile100-result-What is the pap-0.3.json",
             "../data/test_v16_inputfile100-result-What is the aut-0.1.json",
             "../data/test_v16_inputfile100-result-What is the mai.json"]
 
+MODELS = ["UAE-Large-V1", "SFR"]
+
+RATIOS = [0.01, 0.03, 0.06, 0.13, 0.19]
 class ValidationWithTestAndGroundTruth(dspy.Signature):
     """Compare the test result with the ground truth"""
 
@@ -84,10 +87,16 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    idx = 2
-    budget = 0.05
-    question = QUESTIONS[idx]
-    results_file = f'../data/fallback/results-fallback-{question[:15]}-{budget}.json'
-    groundtruth_file = GRDS[idx]
-    acc_file = results_file.replace(".json", "-acc-full.json")
-    evaluate_results(results_file, groundtruth_file, acc_file)
+    # idx = 1
+    # budget = 0.05
+
+    model = MODELS[1]
+    char_size = 500
+    for ratio in RATIOS:
+        for idx in range(3):
+            question = QUESTIONS[idx]
+            print(f"Question: {question}, Model: {model}, Char size: {char_size}, Ratio: {ratio}")
+            results_file = f'../data/rag-tr/rag-tr-results-v16-100-{model}-{char_size}-{question[:15]}-{ratio}.json'
+            groundtruth_file = GRDS[idx]
+            acc_file = results_file.replace(".json", "-acc-full.json")
+            evaluate_results(results_file, groundtruth_file, acc_file)

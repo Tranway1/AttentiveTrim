@@ -22,7 +22,7 @@ def best_substring_match(query, string):
 
 
 if __name__ == "__main__":
-    grd_file ="../data/test_v16_inputfile100-result-What are the ba.json"
+    grd_file ="../data/test_v16_inputfile100-result-What is the aut-0.1.json"
     res_file = grd_file.replace(".json", "-location.json")
     with open(grd_file) as f:
         json_obj = json.loads(f.read())

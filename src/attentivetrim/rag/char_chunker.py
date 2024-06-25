@@ -35,7 +35,7 @@ def get_chunks_token(file_json,truncate=0):
     print(len(texts))
     return texts
 
-def get_chunks_char(file_json,chunk_char_size=500, truncate=0):
+def get_chunks_char(file_json,chunk_char_size=500, truncate=0, start_ratio=0.0, end_ratio=1.0):
     # file_json = "/Users/chunwei/pvldb_1-16/17/p3044-liu_pm.json"
     print(f'chunking file: {file_json}')
     with open(file_json) as f_in:
@@ -45,6 +45,9 @@ def get_chunks_char(file_json,chunk_char_size=500, truncate=0):
         text = doc_dict["symbols"][:truncate]
     else:
         text = doc_dict["symbols"]
+    if start_ratio != 0.0 or end_ratio != 1.0:
+        print(f"truncate text from {start_ratio} to {end_ratio}")
+        text = text[int(start_ratio * len(text)):int(end_ratio * len(text))]
 
 
     texts = split_text_on_characters(text=text, chars_per_chunk=chunk_char_size, chunk_overlap=0)

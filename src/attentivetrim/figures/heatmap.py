@@ -1,10 +1,12 @@
 import json
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-task="test-authors"
+task="test-baselines"
 ranges = []
-with open("../data/test_v16_inputfile100-result-What is the aut-0.1-location.json", "rb") as file:
+with open("../data/test_v16_inputfile100-result-What are the ba-location.json", "rb") as file:
     data = file.read()
     json_obj = json.loads(data)
 
@@ -26,8 +28,8 @@ frequency_matrix = np.zeros(len(bins)-1)
 
 # Populate the frequency matrix based on the ranges
 for r in ranges:
-    start_index = int(float(r[0] - overall_min)/resolution)
-    end_index = int(float(r[1] - overall_min)/resolution)
+    start_index = math.floor(float(r[0] - overall_min)/resolution)
+    end_index = math.ceil(float(r[1] - overall_min)/resolution)
     frequency_matrix[start_index:end_index] += 1
 
 # Plotting the heatmap
