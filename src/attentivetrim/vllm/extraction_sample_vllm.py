@@ -8,11 +8,13 @@ from src.attentivetrim.tool.histogram_range import get_range_from_hist
 
 QUESTIONS = ["What is the paper title?",
              "What is the authors of the paper?",
-             "What is the main contribution of the paper?"]
+             "What is the main contribution of the paper?",
+             "What are the baselines used in the evaluation?"]
 
 HISTS = ["../data/frequency-test-title.csv",
             "../data/frequency-test-authors.csv",
-            "../data/frequency-test-contribution.csv"]
+            "../data/frequency-test-contribution.csv",
+            "../data/frequency-test-baselines.csv"]
  
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
  
@@ -28,6 +30,7 @@ parser.add_argument("--print_output", action='store_true', help="print generated
 parser.add_argument("--test_perf", action='store_true', help="test performance to include warmup runs")
 parser.add_argument("--text_ratio", default=0.1, type=float, help="ratio of the text to use for the prompt")
 parser.add_argument("--question", default=0, type=int, help="question index to use")
+parser.add_argument("--otr", action='store_true', help="use output token reduction")
 args = parser.parse_args()
  
 max_model_len = (args.max_new_tokens + args.input_size + 5) * args.batch_size
@@ -77,7 +80,10 @@ sr, er = get_range_from_hist(hist_file, ratio, resolution=0.001, trim_zeros=Fals
 results = {"question": question, "ratio": ratio, "hist_file": hist_file, "start_ratio": sr, "end_ratio": er, "files": []}
 print("question:", question, "ratio:", ratio, "hist_file:", hist_file, "start ratio:", sr, "end ratio:", er)
 
-for file in list_of_files:
+for cfile in list_of_files:
+    file = cfile
+    if args.otr:
+        file = cfile.replace(".json", "_numbered.json")
     with open(base_dir+'pvldb_1-16/16/' + file) as f_in:
         doc_dict = json.load(f_in)
 
@@ -91,6 +97,8 @@ for file in list_of_files:
     print("given ratio", ratio, "sample size:", len(sample), "total size:", len(context), "ratio:", len(sample)/len(context))
 
     prompt = f"Here is a paper snippet:'''{sample}'''\n\nNow please answer the question: {question} \n Please only answer the question I asked above and print the answer in a single line."
+    if args.otr:
+        prompt = f"Here is a paper snippet with a marker (e.g., S1, S2) for each sentence:'''{sample}'''\n\nNow please answer the question with marks only: {question} \n Please ONLY return the markers of the sentences related to the answer. Please merge the marker indices if possible, e.g. Sx-Sy. Please do NOT output any sentences but only markers."
     prompts = [prompt]
     test_result = ""
     start_time = time.time()
@@ -113,7 +121,11 @@ for file in list_of_files:
     print("file:", file, " result:", f"{test_result!r}")
 
 json_string = json.dumps(results, indent=4)
-with open(f'../data/vllm/vllm-results-{question[:15]}-{ratio}.json', 'w') as f:
-    f.write(json_string)
+if args.otr:
+    with open(f'../data/vllm/vllm-results-{question[:15]}-{ratio}-otr.json', 'w') as f:
+        f.write(json_string)
+else:
+    with open(f'../data/vllm/vllm-results-{question[:15]}-{ratio}.json', 'w') as f:
+        f.write(json_string)
 
 

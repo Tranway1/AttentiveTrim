@@ -56,13 +56,13 @@ def find_best_range(values, budget, trim_zeros=True):
         best_start = best_start - half_zeros+leading_zeros
         best_end = best_end - trailing_zeros + leading_zeros+trailing_zeros-half_zeros
 
-        if best_start < 0:
-            best_end = best_end - best_start
-            best_start = 0
+
         if best_end >= n:
             best_start = best_start - (best_end-n+1)
             best_end = n-1
-
+        if best_start < 0:
+            best_end = best_end - best_start
+            best_start = 0
     return best_start, best_end+1
 
 

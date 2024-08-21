@@ -29,21 +29,33 @@ def plot_cdf(data, label):
     plt.plot(sorted_data, cdf, label=label)
 
 
-base_dir = "../data/local-full/"
-
+# base_dir = "../data/local-full/"
+base_dir = "../data/diverse/"
 # Define the mapping of questions to file arrays
 json_file_series = {
+    # "title": [
+    #     "results-What is the pap-0.001-acc-local-0.1.json",
+    #     "results-What is the pap-0.005-acc-local-0.1.json",
+    #     "results-What is the pap-0.05-acc-local-0.1.json",
+    #     "results-What is the pap-0.3-acc-local-0.1.json"
+    # ],
+    # "authors": [
+    #     "results-What is the aut-0.005-acc-local-0.1.json",
+    #     "results-What is the aut-0.01-acc-local-0.1.json",
+    #     "results-What is the aut-0.05-acc-local-0.1.json",
+    #     "results-What is the aut-0.1-acc-local-0.1.json"
+    # ],
     "title": [
-        "results-What is the pap-0.001-acc-local-0.1.json",
-        "results-What is the pap-0.005-acc-local-0.1.json",
-        "results-What is the pap-0.05-acc-local-0.1.json",
-        "results-What is the pap-0.3-acc-local-0.1.json"
+        "results-What is the pap-0.001-acc-local-full.json",
+        "results-What is the pap-0.005-acc-local-full.json",
+        "results-What is the pap-0.05-acc-local-full.json",
+        "results-What is the pap-0.3-acc-local-full.json"
     ],
     "authors": [
-        "results-What is the aut-0.005-acc-local-0.1.json",
-        "results-What is the aut-0.01-acc-local-0.1.json",
-        "results-What is the aut-0.05-acc-local-0.1.json",
-        "results-What is the aut-0.1-acc-local-0.1.json"
+        "results-Who are the aut-0.005-acc-local-full.json",
+        "results-Who are the aut-0.01-acc-local-full.json",
+        "results-Who are the aut-0.05-acc-local-full.json",
+        "results-Who are the aut-0.1-acc-local-full.json"
     ],
     "contribution": [
         "results-What is the mai-0.05-acc-local-full.json",
@@ -52,6 +64,14 @@ json_file_series = {
         "results-What is the mai-0.2-acc-local-full.json",
         "results-What is the mai-0.4-acc-local-full.json",
         "results-What is the mai-0.9-acc-local-full.json"
+    ],
+    "baselines": [
+        "results-What are the ba-0.05-acc-local-full.json",
+        "results-What are the ba-0.1-acc-local-full.json",
+        "results-What are the ba-0.15-acc-local-full.json",
+        "results-What are the ba-0.2-acc-local-full.json",
+        "results-What are the ba-0.4-acc-local-full.json",
+        "results-What are the ba-0.9-acc-local-full.json"
     ]
 }
 
@@ -74,4 +94,4 @@ for question, files in json_file_series.items():
     plt.xlim(1.01, 0.0)  # Set the x-axis limits to reverse the axis
 
     # Save the plot for each question
-    plt.savefig(f'../figures/figure/cdf-{question}.pdf')
+    plt.savefig(f'../figures/figure/cdf-diverse-{question}.pdf')

@@ -11,11 +11,14 @@ from src.attentivetrim.tool.dspy_interface import dspyCOT
 
 QUESTIONS = ["What is the paper title?",
              "What is the authors of the paper?",
-             "What is the main contribution of the paper?"]
+             "What is the main contribution of the paper?",
+             "What are the baselines used in the evaluation?"]
+
 
 HISTS = ["../data/frequency-test-title.csv",
             "../data/frequency-test-authors.csv",
-            "../data/frequency-test-contribution.csv"]
+            "../data/frequency-test-contribution.csv",
+            "../data/frequency-test-baselines.csv"]
 
 
 class SingleQuestionOverSampleFallback(dspy.Signature):
@@ -62,12 +65,13 @@ def run_file_batch(list_of_files, question, hist_file, budget=0.05):
         print("test_result:", test_result)
         while test_result == "None":
             print(f"fallback to higher budget {cur_budget} -> {cur_budget*2}")
-            if cur_budget <= 0.4:
+            if cur_budget <0.4:
                 cur_budget = cur_budget*2
-            elif cur_budget < 1.0:
-                cur_budget = 1.0
+            # elif cur_budget < 1.0:
+            #     cur_budget = 1.0
             else:
                 break
+            print(f"using budget: {cur_budget}")
             cur_sr, cur_er = histogram_range.get_range_from_hist(hist_file, cur_budget, resolution=0.001, trim_zeros=False)
             print("fallback start ratio:", cur_sr, "end ratio:", cur_er)
             test_result = get_test_result(file, question, cur_sr, cur_er)
@@ -90,7 +94,7 @@ if __name__ == "__main__":
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
-    q_idx= 2
+    q_idx= 3
     question = QUESTIONS[q_idx]
     hist_file = HISTS[q_idx]
     budget = 0.05

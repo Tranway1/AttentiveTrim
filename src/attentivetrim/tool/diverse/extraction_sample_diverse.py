@@ -21,6 +21,12 @@ HISTS = ["../../data/frequency-test-title.csv",
             "../../data/frequency-test-contribution.csv",
             "../../data/frequency-test-baselines.csv"]
 
+BUDGETS = [
+    [0.001, 0.005, 0.05, 0.3],
+    [0.005, 0.01, 0.05, 0.1],
+    [0.05, 0.1, 0.15, 0.2, 0.4, 0.9],
+    [0.05, 0.1, 0.15, 0.2, 0.4, 0.9]
+]
 
 class SingleQuestionOverSample(dspy.Signature):
     """Answer question(s) about a scientific paper."""
@@ -35,7 +41,7 @@ class SingleQuestionOverSample(dspy.Signature):
 
 def get_test_result(file_path, question, sr, er):
     # Load document
-    with open('/Users/chunwei/pvldb_1-16/16/' + file_path) as f_in:
+    with open(file_path) as f_in:
         doc_dict = json.load(f_in)
 
     context = doc_dict["symbols"]
@@ -76,17 +82,18 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    idx = 1
+    idx = 3
 
-    list_file = "../data/test_v16_inputfile100.txt"
+    list_file = "../../data/test_diverse_inputfile100.txt"
     with open(list_file) as f:
         list_of_files = f.readlines()
     list_of_files = [x.strip() for x in list_of_files]
     question = QUESTIONS[idx]
     hist_file = HISTS[idx]
-    budget = 0.005
-    print("question:", question, "hist_file:", hist_file, "budget:", budget)
-    results = run_file_batch(list_of_files, question, hist_file, budget=budget)
-    json_string = json.dumps(results, indent=4)
-    with open(f'../data/results-{question[:15]}-{budget}.json', 'w') as f:
-        f.write(json_string)
+    budgets = BUDGETS[idx]
+    for budget in budgets:
+        print("question:", question, "hist_file:", hist_file, "budget:", budget)
+        results = run_file_batch(list_of_files, question, hist_file, budget=budget)
+        json_string = json.dumps(results, indent=4)
+        with open(f'../../data/diverse/results-{question[:15]}-{budget}.json', 'w') as f:
+            f.write(json_string)

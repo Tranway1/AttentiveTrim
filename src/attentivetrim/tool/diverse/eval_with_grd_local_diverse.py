@@ -7,7 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import dsp
 import dspy
 
-from dspy_interface import dspyCOT, VeriCorrectness
+from src.attentivetrim.tool.dspy_interface import dspyCOT, VeriCorrectness
 from rouge_score import rouge_scorer
 
 # Initialize the ROUGE scorer
@@ -96,33 +96,34 @@ if __name__ == "__main__":
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
     tests = [
-        ["../data/gpt4/results-What is the pap-0.001.json",
-         "../data/gpt4/results-What is the pap-0.005.json",
-         "../data/gpt4/results-What is the pap-0.05.json",
-         "../data/gpt4/results-What is the pap-0.3.json",],
-        ["../data/gpt4/results-What is the aut-0.005.json",
-         "../data/gpt4/results-What is the aut-0.01.json",
-         "../data/gpt4/results-What is the aut-0.05.json",
-         "../data/gpt4/results-What is the aut-0.1.json"],
-        ["../data/gpt4/results-What is the mai-0.05.json",
-         "../data/gpt4/results-What is the mai-0.1.json",
-         "../data/gpt4/results-What is the mai-0.15.json",
-         "../data/gpt4/results-What is the mai-0.2.json",
-         "../data/gpt4/results-What is the mai-0.4.json",
-         "../data/gpt4/results-What is the mai-0.9.json"],
-        ["../data/gpt4/results-What are the ba-0.05.json",
-            "../data/gpt4/results-What are the ba-0.1.json",
-            "../data/gpt4/results-What are the ba-0.15.json",
-            "../data/gpt4/results-What are the ba-0.2.json",
-            "../data/gpt4/results-What are the ba-0.4.json",
-            "../data/gpt4/results-What are the ba-0.9.json"]
+        ["../../data/diverse/results-What is the pap-0.001.json",
+         "../../data/diverse/results-What is the pap-0.005.json",
+         "../../data/diverse/results-What is the pap-0.05.json",
+         "../../data/diverse/results-What is the pap-0.3.json",],
+        ["../../data/diverse/results-Who are the aut-0.005.json",
+         "../../data/diverse/results-Who are the aut-0.01.json",
+         "../../data/diverse/results-Who are the aut-0.05.json",
+         "../../data/diverse/results-Who are the aut-0.1.json"],
+        ["../../data/diverse/results-What is the mai-0.05.json",
+         "../../data/diverse/results-What is the mai-0.1.json",
+         "../../data/diverse/results-What is the mai-0.15.json",
+         "../../data/diverse/results-What is the mai-0.2.json",
+         "../../data/diverse/results-What is the mai-0.4.json",
+         "../../data/diverse/results-What is the mai-0.9.json"],
+        ["../../data/diverse/results-What are the ba-0.05.json",
+        "../../data/diverse/results-What are the ba-0.1.json",
+        "../../data/diverse/results-What are the ba-0.15.json",
+        "../../data/diverse/results-What are the ba-0.2.json",
+        "../../data/diverse/results-What are the ba-0.4.json",
+        "../../data/diverse/results-What are the ba-0.9.json"]
     ]
 
-    grds = ["../data/test_v16_inputfile100-result-What is the pap-0.3.json",
-            "../data/test_v16_inputfile100-result-What is the aut-0.1.json",
-            "../data/test_v16_inputfile100-result-What is the mai.json",
-            "../data/test_v16_inputfile100-result-What are the ba.json"]
-    idx = 3
+    grds = ["../../data/test_diverse_inputfile100-result-What is the pap-0.3.json",
+           "../../data/test_diverse_inputfile100-result-Who are the aut-0.3.json",
+           "../../data/test_diverse_inputfile100-result-What is the mai.json",
+           "../../data/test_diverse_inputfile100-result-What are the ba.json"]
+
+    idx = 0
     for results_file in tests[idx]:
         groundtruth_file = grds[idx]
         acc_file = results_file.replace(".json", "-acc-local-full.json")

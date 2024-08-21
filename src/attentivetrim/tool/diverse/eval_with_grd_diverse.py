@@ -6,32 +6,34 @@ from textwrap import indent
 import dsp
 import dspy
 
-from dspy_interface import dspyCOT, VeriCorrectness
+from src.attentivetrim.tool.dspy_interface import dspyCOT, VeriCorrectness
 
 
 
-QUESTIONS = ["What is the paper title?",
-             "What is the authors of the paper?",
-             "What is the main contribution of the paper?",
-             "What are the baselines used in the evaluation?"]
+QUESTIONS = [
+    "What is the paper title?",
+    "Who are the authors of the paper?",
+    "What is the main contribution of the paper?",
+    "What are the baselines used in the evaluation?"]
 
-HISTS = ["../data/frequency-test-title.csv",
-            "../data/frequency-test-authors.csv",
-            "../data/frequency-test-contribution.csv",
-            "../data/frequency-test-baselines.csv"]
 
-GRDS = ["../data/test_v16_inputfile100-result-What is the pap-0.3.json",
-            "../data/test_v16_inputfile100-result-What is the aut-0.1.json",
-            "../data/test_v16_inputfile100-result-What is the mai.json",
-            "../data/test_v16_inputfile100-result-What are the ba.json"]
+HISTS = ["../../data/frequency-test-title.csv",
+            "../../data/frequency-test-authors.csv",
+            "../../data/frequency-test-contribution.csv",
+            "../../data/frequency-test-baselines.csv"]
+
+DIVERSEGRDS = ["../../data/test_diverse_inputfile100-result-What is the pap-0.3.json",
+            "../../data/test_diverse_inputfile100-result-Who are the aut-0.3.json",
+            "../../data/test_diverse_inputfile100-result-What is the mai.json",
+            "../../data/test_diverse_inputfile100-result-What are the ba.json"]
+
 
 BUDGETS = [
     [0.001, 0.005, 0.05, 0.3],
     [0.005, 0.01, 0.05, 0.1],
-    [0.05, 0.1, 0.15, 0.2, 0.4, 0.9],
-    [0.05, 0.1, 0.15, 0.2, 0.4, 0.9]
+    [0.9],
+    [0.9]
 ]
-
 class ValidationWithTestAndGroundTruth(dspy.Signature):
     """Compare the test result with the ground truth"""
 
@@ -94,13 +96,13 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    idx = 3
+    idx = 2
+
     question = QUESTIONS[idx]
-    bgts = BUDGETS[idx]
-    for budget in [0.05]:
+    budgets = BUDGETS[idx]
+    for budget in budgets:
         print("question:", question, "budget:", budget)
-        results_file = f'../data/fallback/results-fallback-{question[:15]}-{budget}.json'
-        # results_file = f'../data/gpt4/results-{question[:15]}-{budget}.json'
-        groundtruth_file = GRDS[idx]
+        results_file = f'../../data/diverse/results-{question[:15]}-{budget}.json'
+        groundtruth_file = DIVERSEGRDS[idx]
         acc_file = results_file.replace(".json", "-acc-full.json")
         evaluate_results(results_file, groundtruth_file, acc_file)

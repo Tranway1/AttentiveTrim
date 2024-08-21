@@ -8,13 +8,17 @@ from src.attentivetrim.tool import histogram_range
 from src.attentivetrim.tool.dspy_interface import dspyCOT
 
 
-QUESTIONS = ["What is the paper title?",
-             "What is the authors of the paper?",
-             "What is the main contribution of the paper?"]
+QUESTIONS = [
+    "What is the paper title?",
+    "Who are the authors of the paper?",
+    "What is the main contribution of the paper?",
+    "What are the baselines used in the evaluation?"]
+
 
 HISTS = ["../data/frequency-test-title.csv",
             "../data/frequency-test-authors.csv",
-            "../data/frequency-test-contribution.csv"]
+            "../data/frequency-test-contribution.csv",
+            "../data/frequency-test-baselines.csv"]
 
 
 class SingleQuestionOverSample(dspy.Signature):
@@ -71,7 +75,7 @@ if __name__ == "__main__":
     openai_key = os.environ['OPENAI_API_KEY']
     turbo = dspy.OpenAI(model='gpt-4-1106-preview', api_key=openai_key, temperature=0.0)
     dspy.settings.configure(lm=turbo)
-    idx = 1
+    idx = 3
 
     list_file = "../data/test_v16_inputfile100.txt"
     with open(list_file) as f:
@@ -79,9 +83,10 @@ if __name__ == "__main__":
     list_of_files = [x.strip() for x in list_of_files]
     question = QUESTIONS[idx]
     hist_file = HISTS[idx]
-    budget = 0.005
-    print("question:", question, "hist_file:", hist_file, "budget:", budget)
-    results = run_file_batch(list_of_files, question, hist_file, budget=budget)
-    json_string = json.dumps(results, indent=4)
-    with open(f'../data/results-{question[:15]}-{budget}.json', 'w') as f:
-        f.write(json_string)
+    budgets = [0.9]
+    for budget in budgets:
+        print("question:", question, "hist_file:", hist_file, "budget:", budget)
+        results = run_file_batch(list_of_files, question, hist_file, budget=budget)
+        json_string = json.dumps(results, indent=4)
+        with open(f'../data/gpt4/results-{question[:15]}-{budget}.json', 'w') as f:
+            f.write(json_string)

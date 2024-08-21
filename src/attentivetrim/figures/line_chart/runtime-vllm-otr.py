@@ -17,36 +17,36 @@ base_dir = "../../data/vllm/"
 # Define the mapping of questions to file arrays
 json_file_series = {
     "title": [
-        "vllm-results-What is the pap-0.005.json",
-        "vllm-results-What is the pap-0.01.json",
-        "vllm-results-What is the pap-0.05.json",
-        "vllm-results-What is the pap-0.1.json",
-        "vllm-results-What is the pap-0.2.json",
-        "vllm-results-What is the pap-0.3.json"
+        "vllm-results-What is the pap-0.005-otr.json",
+        "vllm-results-What is the pap-0.01-otr.json",
+        "vllm-results-What is the pap-0.05-otr.json",
+        "vllm-results-What is the pap-0.1-otr.json",
+        "vllm-results-What is the pap-0.2-otr.json",
+        "vllm-results-What is the pap-0.3-otr.json"
     ],
     "authors": [
-        "vllm-results-What is the aut-0.005.json",
-        "vllm-results-What is the aut-0.01.json",
-        "vllm-results-What is the aut-0.05.json",
-        "vllm-results-What is the aut-0.1.json",
-        "vllm-results-What is the aut-0.2.json",
-        "vllm-results-What is the aut-0.3.json"
+        "vllm-results-What is the aut-0.005-otr.json",
+        "vllm-results-What is the aut-0.01-otr.json",
+        "vllm-results-What is the aut-0.05-otr.json",
+        "vllm-results-What is the aut-0.1-otr.json",
+        "vllm-results-What is the aut-0.2-otr.json",
+        "vllm-results-What is the aut-0.3-otr.json"
     ],
     "contribution": [
-        "vllm-results-What is the mai-0.005.json",
-        "vllm-results-What is the mai-0.01.json",
-        "vllm-results-What is the mai-0.05.json",
-        "vllm-results-What is the mai-0.1.json",
-        "vllm-results-What is the mai-0.2.json",
-        "vllm-results-What is the mai-0.3.json"
+        "vllm-results-What is the mai-0.005-otr.json",
+        "vllm-results-What is the mai-0.01-otr.json",
+        "vllm-results-What is the mai-0.05-otr.json",
+        "vllm-results-What is the mai-0.1-otr.json",
+        "vllm-results-What is the mai-0.2-otr.json",
+        "vllm-results-What is the mai-0.3-otr.json"
     ],
     "baselines": [
-        "vllm-results-What are the ba-0.005.json",
-        "vllm-results-What are the ba-0.01.json",
-        "vllm-results-What are the ba-0.05.json",
-        "vllm-results-What are the ba-0.1.json",
-        "vllm-results-What are the ba-0.2.json",
-        "vllm-results-What are the ba-0.3.json"
+        "vllm-results-What are the ba-0.005-otr.json",
+        "vllm-results-What are the ba-0.01-otr.json",
+        "vllm-results-What are the ba-0.05-otr.json",
+        "vllm-results-What are the ba-0.1-otr.json",
+        "vllm-results-What are the ba-0.2-otr.json",
+        "vllm-results-What are the ba-0.3-otr.json"
     ]
 }
 
@@ -62,7 +62,7 @@ for question, files in json_file_series.items():
         durations.append(duration_values)
         means.append(np.mean(duration_values))
         # Extract the parameter value from the file name for labeling
-        param_value = float(json_file.split(".json")[0].split("-")[-1])
+        param_value = float(json_file.split("-otr.json")[0].split("-")[-1])
         labels.append(f"{param_value}")
 
     # Plot the violin plot
@@ -81,11 +81,11 @@ for question, files in json_file_series.items():
     plt.xticks(np.arange(1, len(labels) + 1), labels)
 
     # Customize the plot
-    plt.ylim(0.0,6.1)
+    plt.ylim(0.0, 6.1)
     plt.xlabel('Input proportion of the paper')
     plt.ylabel('Inference Runtime (s)')
-    plt.title(f'Violin Plot of Duration for {question}')
+    plt.title(f'Violin Plot of Duration for {question} with output token reduction')
     plt.grid(True)
 
     # Save the plot for each question
-    plt.savefig(f'../figure/vllm/vllm_violin-{question}.pdf')
+    plt.savefig(f'../figure/vllm/vllm_otr-violin-{question}.pdf')
