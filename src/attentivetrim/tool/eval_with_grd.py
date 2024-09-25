@@ -60,7 +60,7 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
     question = grd_json["question"]
     print("Question: ", question)
     total_budget = 0
-    if "fallback" in results_file:
+    if "fallback" in results_file or "sentence" in results_file or "section" in results_file:
         for entry in results["files"]:
             total_budget += entry["budget"]
 
@@ -88,6 +88,33 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
     print(f"Total matches: {cnt} out of {len(results['files'])}")
     print(f"Total avg budget: {total_budget/len(results['files'])}")
 
+def evaluate_results_budget(results_file, groundtruth_file, acc_file):
+
+    with open(results_file) as fr:
+        results = json.load(fr)
+
+    with open(groundtruth_file) as fgrd:
+        grd_json = json.load(fgrd)
+        groundtruth_data = grd_json["files"]
+
+    acc_res = {"question": grd_json["question"], "files": []}
+    question = grd_json["question"]
+    print("Question: ", question)
+    total_budget = 0
+    if "fallback" in results_file or "sentence" in results_file or "section" in results_file:
+        for entry in results["files"]:
+            total_budget += entry["budget"]
+
+    with open(acc_file, "r") as f:
+        acc_res = json.load(f)
+        acc_res["total_avg_budget"] = total_budget/len(results["files"])
+    # write back the total avg budget
+    with open(acc_file, "w") as f:
+        f.write(json.dumps(acc_res, indent=4))
+
+    print(f"Total avg budget: {total_budget/len(results['files'])}")
+
+
 if __name__ == "__main__":
     if 'OPENAI_API_KEY' not in os.environ:
         raise ValueError("OPENAI_API_KEY not found in environment variables")
@@ -97,9 +124,14 @@ if __name__ == "__main__":
     idx = 3
     question = QUESTIONS[idx]
     bgts = BUDGETS[idx]
-    for budget in [0.05]:
+    mode = "section"
+    enable_fallback = True
+    for budget in [bgts[0]]:
         print("question:", question, "budget:", budget)
-        results_file = f'../data/fallback/results-fallback-{question[:15]}-{budget}.json'
+        if mode == "fallback":
+            results_file = f'../data/fallback/results-fallback-{question[:15]}-{budget}.json'
+        else:
+            results_file = f'../data/{mode}/results-{mode}-{enable_fallback}-{question[:15]}-{budget}.json'
         # results_file = f'../data/gpt4/results-{question[:15]}-{budget}.json'
         groundtruth_file = GRDS[idx]
         acc_file = results_file.replace(".json", "-acc-full.json")

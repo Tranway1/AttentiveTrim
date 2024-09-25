@@ -300,7 +300,8 @@ Now please answer the questions: What is contribution of the paper?
 messages = [{"role": "user", "content": input_text}]
 input_ids = tokenizer.apply_chat_template(messages, return_dict=True, tokenize=True, add_generation_prompt=True, return_tensors="pt").to("cuda")
 
-outputs = model.generate(**input_ids, max_new_tokens=200)
+outputs = model.generate(**input_ids, max_new_tokens=200, output_attentions=True, output_hidden_states=True)
+print(f"Generated output: {outputs}")
 print(tokenizer.decode(outputs[0]))
 
 # input_text = "Databricks was founded in "

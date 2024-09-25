@@ -688,7 +688,8 @@ sending_data = time.time() - start
 print(f"ts: {sending_data:.4f} seconds")
 
 print("Generating response...")
-generated_ids = model.generate(input_ids, max_new_tokens=1000)
+generated_ids = model.generate(input_ids, max_new_tokens=1000, output_attentions=True, output_hidden_states=True)
+print("Generated response: ", generated_ids)
 generate_res = time.time() - start
 print(f"ts: {generate_res:.4f} seconds")
 print("Decoding response...")
