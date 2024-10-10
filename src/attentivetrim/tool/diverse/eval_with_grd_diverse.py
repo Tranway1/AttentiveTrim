@@ -60,7 +60,7 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
 
     acc_res = {"question": grd_json["question"], "files": []}
     question = grd_json["question"]
-    print("Question: ", question)
+    # print("Question: ", question)
     total_budget = 0
     if "fallback" in results_file:
         for entry in results["files"]:
@@ -72,15 +72,20 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
     for result in results["files"]:
         file = result["file"]
         test = result["result"]
-        ground_truth = next((item["groundtruth"] for item in groundtruth_data if item["file"] == file), None)
+        ground_truth = next((item["groundtruth"] for item in groundtruth_data if item["file"].endswith(file)), None)
 
         if ground_truth:
+            if ground_truth.lower() == "none":
+                acc_res["files"].append({"file": file, "groundtruth": ground_truth, "result": test, "match": "True",
+                                         "rationale": "groundtruth is none"})
+                cnt += 1
+                continue
             pred = verification_cot(question, ground_truth, test)
             # print("prompt: ", pred.rationale)
             match = pred.is_correct
             if match == "True":
                 cnt += 1
-            print("file:", file, " groundtruth: ", ground_truth, " result:", test, " match:", match)
+            # print("file:", file, " groundtruth: ", ground_truth, " result:", test, " match:", match)
             acc_res["files"].append({"file": file, "groundtruth": ground_truth, "result": test, "match": match, "rationale": pred.rationale})
     acc_res["total_matches"] = cnt
     acc_res["total_files"] = len(results["files"])

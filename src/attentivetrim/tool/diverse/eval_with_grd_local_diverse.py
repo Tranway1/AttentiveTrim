@@ -29,7 +29,7 @@ class ValidationCorrectnessSignature(dspy.Signature):
     predicted_answer = dspy.InputField(desc="another statement of a scientific paper as a test")
     is_correct = dspy.OutputField(desc="Please print the result of the comparison in 'True' or 'False'. If the test is the sementically similar to the ground truth, print 'True'. Otherwise, print 'False'.")
 
-def evaluate_results(results_file, groundtruth_file, acc_file):
+def evaluate_rouge_results(results_file, groundtruth_file, acc_file):
 
 
     with open(results_file) as fr:
@@ -41,7 +41,7 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
 
     acc_res = {"question": grd_json["question"], "files": []}
     question = grd_json["question"]
-    print("Question: ", question)
+    # print("Question: ", question)
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -50,7 +50,7 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
     for result in results["files"]:
         file = result["file"]
         test = result["result"]
-        ground_truth = next((item["groundtruth"] for item in groundtruth_data if item["file"] == file), None)
+        ground_truth = next((item["groundtruth"] for item in groundtruth_data if item["file"].endswith(file)), None)
         if ground_truth:
             # Calculate ROUGE scores
             rouge_scores = scorer.score(ground_truth, test)
@@ -64,13 +64,13 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
             )
 
             # Log results
-            print("file:", file,
-                  "groundtruth:", ground_truth,
-                  "result:", test,
-                  "match:", min(float(cos_sim[0][0]),1.0),
-                  "ROUGE-1:", rouge_scores['rouge1'],
-                  "ROUGE-2:", rouge_scores['rouge2'],
-                  "ROUGE-L:", rouge_scores['rougeL'])
+            # print("file:", file,
+            #       "groundtruth:", ground_truth,
+            #       "result:", test,
+            #       "match:", min(float(cos_sim[0][0]),1.0),
+            #       "ROUGE-1:", rouge_scores['rouge1'],
+            #       "ROUGE-2:", rouge_scores['rouge2'],
+            #       "ROUGE-L:", rouge_scores['rougeL'])
 
             # Append results to acc_res
             acc_res["files"].append({
@@ -127,4 +127,4 @@ if __name__ == "__main__":
     for results_file in tests[idx]:
         groundtruth_file = grds[idx]
         acc_file = results_file.replace(".json", "-acc-local-full.json")
-        evaluate_results(results_file, groundtruth_file, acc_file)
+        evaluate_rouge_results(results_file, groundtruth_file, acc_file)

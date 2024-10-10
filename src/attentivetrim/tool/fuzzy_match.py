@@ -30,7 +30,7 @@ if __name__ == "__main__":
     res_obj["question"] = json_obj["question"]
     res_obj["files"] = []
     list_of_file_extraction = json_obj["files"]
-    for extraction  in list_of_file_extraction:
+    for extraction in list_of_file_extraction:
         file_path = extraction["file"]
         query = extraction["groundtruth"]
         with open('/Users/chunwei/pvldb_1-16/16/' + file_path) as f_in:

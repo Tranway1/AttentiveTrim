@@ -46,7 +46,7 @@ def parse_log(log_file_path):
                     'iter_ts': timestamp_match.group(1),
                     # 'file': f"L{tensor_size_match.group(1)}_{timestamp_match.group(1)}.pt"
                 })
-                if int(tensor_size_match.group(1)) == 15:
+                if int(tensor_size_match.group(1)) == 11:
                     # print(f"Found all layers for record {current_record['record_id']}")
                     iter_list.append({
                         'iter_id': len(iter_list),
@@ -78,10 +78,10 @@ def write_json(records, output_file_path):
         json.dump({'records': records, 'total': len(records)}, json_file, indent=4)
 
 
-file_name = 'nohup0-5k'
+file_name = 'nohup'
 
 log_file_path = f'/Users/chunwei/research/llm-scheduling/{file_name}.out'
-output_file_path = f'/Users/chunwei/research/llm-scheduling/llama3-10-15-5k.json'
+output_file_path = f'/Users/chunwei/research/llm-scheduling/llama3-11-40k.json'
 
 records = parse_log(log_file_path)
 write_json(records, output_file_path)

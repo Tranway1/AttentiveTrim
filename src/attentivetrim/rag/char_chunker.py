@@ -37,7 +37,7 @@ def get_chunks_token(file_json,truncate=0):
 
 def get_chunks_char(file_json,chunk_char_size=500, truncate=0, start_ratio=0.0, end_ratio=1.0):
     # file_json = "/Users/chunwei/pvldb_1-16/17/p3044-liu_pm.json"
-    print(f'chunking file: {file_json}')
+    # print(f'chunking file: {file_json}')
     with open(file_json) as f_in:
         doc_dict = json.load(f_in)
         # print(doc_dict["symbols"])

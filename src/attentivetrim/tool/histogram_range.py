@@ -1,3 +1,6 @@
+import json
+
+
 def find_best_range(values, budget, trim_zeros=True):
     """
     Finds the consecutive range with the biggest sum within a budget.
@@ -79,6 +82,45 @@ def get_range_from_hist(file_path, range_budget, resolution=0.001, trim_zeros=Tr
     start, end = find_best_range(values, budget, trim_zeros=trim_zeros)
     print("start:", start, "end:", end, "index_range:", index_range)
     return  start *1.0/index_range, end *1.0/index_range
+
+def get_range_from_hist_json(file_path, range_budget, resolution=0.001, trim_zeros=True):
+    # Load data from csv file and extract he second column as values
+    values = []
+    with open(file_path, "r") as file:
+        json_obj = json.load(file)
+        values = json_obj["heatmap"]
+        for line in file:
+            line = line.strip()
+            values.append(int(float(line.split(",")[1])))
+    index_range = 1 / resolution
+    budget = int(range_budget * index_range)
+    # Find the best range
+    start, end = find_best_range(values, budget, trim_zeros=trim_zeros)
+    print("start:", start, "end:", end, "index_range:", index_range)
+    return  start *1.0/index_range, end *1.0/index_range
+
+
+
+def get_range_from_hist_json(json_file_path, range_budget, resolution=0.001, trim_zeros=True):
+    # Load data from JSON file
+    with open(json_file_path, "r") as file:
+        data = json.load(file)
+
+    # Extract the heatmap data (assuming it's stored under the key "heatmap")
+    values = data["heatmap"]
+
+    # Calculate the index range
+    index_range = 1 / resolution
+    budget = int(range_budget * index_range)
+
+    # Find the best range
+    start, end = find_best_range(values, budget, trim_zeros=trim_zeros)
+
+    print("start:", start, "end:", end, "index_range:", index_range)
+
+    # Convert indices to the actual range in terms of the original scale
+    return start * 1.0 / index_range, end * 1.0 / index_range
+
 
 if __name__ == "__main__":
     # Example usage

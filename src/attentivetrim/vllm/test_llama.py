@@ -16,7 +16,7 @@ print(f"total record~{datetime.now()}: {len(data)}")
 i = 0
 # Iterate over each prompt in the JSON data
 for item in data:
-    if i<5907:
+    if i<28650:
         i += 1
         continue
     if i >= 50000:

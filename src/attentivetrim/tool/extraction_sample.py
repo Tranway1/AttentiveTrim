@@ -2,7 +2,6 @@ import os
 import json
 import time
 
-import dsp
 import dspy
 from src.attentivetrim.tool import histogram_range
 from src.attentivetrim.tool.dspy_interface import dspyCOT
@@ -69,7 +68,6 @@ def run_file_batch(list_of_files, question, hist_file, budget=0.05):
     return results
 
 if __name__ == "__main__":
-    dsp.modules.cache_utils.cache_turn_on = False
     if 'OPENAI_API_KEY' not in os.environ:
         raise ValueError("OPENAI_API_KEY not found in environment variables")
     openai_key = os.environ['OPENAI_API_KEY']

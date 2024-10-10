@@ -43,7 +43,11 @@ def process_pdf_directory(directory_path):
                 json_file.write(doc_json)
 
             print(f"Saved extracted data to {json_path}")
+    print(f"Done processing directory {directory_path}")
 
 # Example usage
-directory_path = '/Users/chunwei/sigmod/sigmod2024'
-process_pdf_directory(directory_path)
+if __name__ == "__main__":
+    # get dir path from command line
+    import sys
+    directory_path = sys.argv[1]
+    process_pdf_directory(directory_path)
