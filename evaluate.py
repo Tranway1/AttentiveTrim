@@ -3,16 +3,12 @@ This script is used to evaluate the performance of the attentive trim method.
 The main method that is exposed is answer_question, which takes in a context and a question, and an optional list of indices of token to retain in the context, and returns the answer.
 This answer is then evaluated by comparing it to the ground truth answer.
 """
+import os
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 from transformers import pipeline, set_seed
 import torch
 import pickle
 import argparse
-
-model_name = "openai-community/gpt2"
-model_name = "/home/gridsan/cliu/hf/Meta-Llama-3-8B-Instruct"
-tokenizer = AutoTokenizer.from_pretrained(model_name, strip_accents=True)
-model = AutoModelForCausalLM.from_pretrained(model_name, output_attentions=True, device_map="auto")
 
 
 contexts =  ["""A Deep Dive into Common Open Formats for Analytical DBMSs
@@ -87,12 +83,18 @@ def answer_question(context, question, token_indices=None):
     inputs = tokenizer.encode(prompt, return_tensors='pt')
    
     if token_indices:
+        max_id = max(token_indices)+1 # in theory, this should be the max length of the training input of the token reduction
+        # normalize the indices to the length of the input
+        token_indices = [int((x/max_id) * len(inputs[0])) for x in token_indices]
+        token_indices = list(sorted(set(token_indices)))
         inputs = inputs[:, token_indices]
 
     outputs = model.generate(inputs, max_new_tokens=50, pad_token_id=tokenizer.eos_token_id)
     output_tokens = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    answer = output_tokens.split("Answer:")[1].strip()
-    return answer
+    answer = output_tokens
+    # answer = output_tokens.split("Answer:")[1].strip()
+    truncated_input = tokenizer.decode(inputs[0], skip_special_tokens=True)
+    return truncated_input, answer
 
 
 top50_tophead = [0,  17,  22,  27,  18,  32,   2,  42,   4, 112,  21,   1,  28,  29, 24, 171,  88, 170, 189,  38, 250,  20,  26,  19,  31,  23,   3,  58, 34, 165,  43,   8, 172,  74, 209, 169,  30,  37, 260, 167,  36, 173, 25,  78,  60,   9,  44,  82,  77,  35]
@@ -107,6 +109,13 @@ if __name__ == "__main__":
     parser.add_argument("--verbose", action="store_true", default=False, help="Enable verbose output")
     parser.add_argument("--token_indices", choices=["none", "tophead", "toplayer", "all"], default="none", help="Token indices to use for the second question (default: none)")
     args = parser.parse_args()
+
+
+    # model_name = "openai-community/gpt2"
+    # model_name = "Meta-Llama-3-8B-Instruct"
+    model_name = "unsloth/Meta-Llama-3.1-8B-Instruct"
+    tokenizer = AutoTokenizer.from_pretrained(model_name, strip_accents=True)
+    model = AutoModelForCausalLM.from_pretrained(model_name, output_attentions=True, device_map="auto")
 
     scores = []
     for i, c in enumerate(contexts):
@@ -124,11 +133,11 @@ if __name__ == "__main__":
                     token_indices = list(sorted(top50_all))
 
             answer = answers[j][i]
-            predicted = answer_question(c, q, token_indices)
+            inputs, predicted = answer_question(c, q, token_indices)
             score = evaluate_answer(predicted, answer)
             scores.append(score)
             if args.verbose:
-                print("Input:", q)
+                print("Input:", inputs)
                 print("\t", predicted)
                 print("\t (Ground Truth:", answer, ")")
                 print("score", score)
