@@ -2,11 +2,14 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 import torch
 import pickle
 
-# local_model_path = '/home/gridsan/cliu/hf/Mistral-7B-Instruct-v0.2'
-# local_model_path = '/home/gridsan/cliu/hf/dbrx-instruct/'
-model_name = "/home/gridsan/cliu/hf/Meta-Llama-3-8B-Instruct"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModel.from_pretrained(model_name, output_attentions=True, load_in_4bit=True, device_map="auto")
+from pathlib import Path
+HOME_DIR = Path.home()
+
+# local_model_path = f'{HOME_DIR}/hf/Mistral-7B-Instruct-v0.2'
+# local_model_path = f'{HOME_DIR}/hf/dbrx-instruct/'
+model_name = f'{HOME_DIR}/hf/Llama-3.2-1B-Instruct'
+
+print(f"Model loaded: {model_name}")
 
 contexts =  ["""A Deep Dive into Common Open Formats for Analytical DBMSs
             Chunwei Liu MIT CSAIL chunwei@csail.mit.edu
@@ -48,33 +51,141 @@ contexts =  ["""A Deep Dive into Common Open Formats for Analytical DBMSs
              statistical and stylistic\nanalysis, and machine learning classification.""",
              """A Lived Informatics Model of Personal Informatics\nDaniel A. Epstein 1 , An Ping 2 , James Fogarty 1 , Sean A. Munson 2\n1 Computer Science & Engineering, 2 Human Centered Design & Engineering\nDUB Group, University of Washington\n{depstein, jfogarty}@cs.washington.edu, {anping, smunson}@uw.edu\nABSTRACT\nCurrent models of how people use personal informatics\nsystems are largely based in behavior change goals. They do\nnot adequately characterize the integration of self-tracking\ninto everyday life by people with varying goals. We build\nupon prior work by embracing the perspective of lived\ninformatics to propose a new model of personal informatics.""",
              """A Stage-Based Model of Personal Informatics Systems\nIan Li 1 , Anind Dey 1 , and Jodi Forlizzi 1,2\n1 Human Computer Interaction Institute, 2 School of Design\nCarnegie Mellon University, Pittsburgh, PA 15213\nianli@cmu.edu, {anind, forlizzi}@cs.cmu.edu\nABSTRACT\nPeople strive to obtain self-knowledge. A class of systems\ncalled personal informatics is appearing that help people\ncollect and reflect on personal information. However, there\nis no comprehensive list of problems that users experience\nusing these systems, and no guidance for making these\nsystems more effective. To address this, we conducted\nsurveys and interviews with people who collect and reflect\non personal information.""",
-             """A Stage-Based Model of Personal Informatics Systems\n ABSTRACT\nPeople strive to obtain self-knowledge. A class of systems\ncalled personal informatics is appearing that help people\ncollect and reflect on personal information. However, there\nis no comprehensive list of problems that users experience\nusing these systems, and no guidance for making these\nsystems more effective. To address this, we conducted\nsurveys and interviews with people who collect and reflect\non personal information. Ian Li 1 , Anind Dey 1 , and Jodi Forlizzi 1,2\n1 Human Computer Interaction Institute, 2 School of Design\nCarnegie Mellon University, Pittsburgh, PA 15213\nianli@cmu.edu, {anind, forlizzi}@cs.cmu.edu\n"""]
+             """A Stage-Based Model of Personal Informatics Systems\n ABSTRACT\nPeople strive to obtain self-knowledge. A class of systems\ncalled personal informatics is appearing that help people\ncollect and reflect on personal information. However, there\nis no comprehensive list of problems that users experience\nusing these systems, and no guidance for making these\nsystems more effective. To address this, we conducted\nsurveys and interviews with people who collect and reflect\non personal information. Ian Li 1 , Anind Dey 1 , and Jodi Forlizzi 1,2\n1 Human Computer Interaction Institute, 2 School of Design\nCarnegie Mellon University, Pittsburgh, PA 15213\nianli@cmu.edu, {anind, forlizzi}@cs.cmu.edu\n""",
+             """Legal Discovery (Figure 2a) — In this use case, prosecutors conducting an investigation wish to identify emails from defendants which are (a) related to corporate fraud (e.g., by mentioning a specific fraudulent
+investment vehicle) and (b) do not quote from a news article reporting on the business in question. Test (a) may
+be implemented using a regular expression or UDF, while (b) requires semantic understanding to distinguish
+between employees sharing news articles versus first-hand sources of information. An efficient implementation
+would recognize that (a) can likely be implemented using conventional and inexpensive methods, while (b)
+may require an LLM or newly-trained text model to retain good quality.
+• Real Estate Search (Figure 2b) — In this use case, a homebuyer wants to use online real estate listing data to
+find a place that is (a) modern and attractive, and (b) within two miles of work. Test (a) is a semantic search
+task that possibly involves analyzing images, while (b) is a more traditional distance calculation over extracted
+geographic data. Any implementation needs to process a large number of images and listings, limit its use of
+slow and expensive models, and still obtain high-quality results.""",
+             """Don’t Stop Me Now:
+Embedding Based Scheduling for LLMs
+Rana Shahout1 Eran Malach1 Chunwei Liu2 Weifan Jiang1 Minlan Yu1
+Michael Mitzenmacher1
+1Harvard University
+2MIT
+Abstract
+Efficient scheduling is crucial for interactive Large Language Model (LLM) ap-
+plications, where low request completion time directly impacts user engagement.
+Size-based scheduling algorithms like Shortest Remaining Process Time (SRPT)
+aim to reduce average request completion time by leveraging known or estimated
+request sizes and allowing preemption by incoming jobs with shorter service
+times. However, two main challenges arise when applying size-based schedul-
+ing to LLM systems. First, accurately predicting output lengths from prompts is
+challenging and often resource-intensive, making it impractical for many systems.
+As a result, the state-of-the-art LLM systems default to first-come, first-served
+scheduling, which can lead to head-of-line blocking and reduced system effi-
+ciency. Second, preemption introduces extra memory overhead to LLM systems
+as they must maintain intermediate states for unfinished (preempted) requests.
+In this paper, we propose TRAIL, a method to obtain output predictions from the
+target LLM itself. After generating each output token, we recycle the embedding
+of its internal structure as input for a lightweight classifier that predicts the re-
+maining length for each running request. Using these predictions, we propose a
+prediction-based SRPT variant with limited preemption designed to account for
+memory overhead in LLM systems. This variant allows preemption early in re-
+quest execution when memory consumption is low but restricts preemption as
+requests approach completion to optimize resource utilization. On the theoretical
+side, we derive a closed-form formula for this SRPT variant in an M/G/1 queue
+model, which demonstrates its potential value. In our system, we implement this
+preemption policy alongside our embedding-based prediction method. Our re-
+fined predictions from layer embeddings achieve 2.66x lower mean absolute error
+compared to BERT predictions from sequence prompts. """,
+             """Phosphorylation of Exo1 modulates homologous
+recombination repair of DNA double-strand breaks
+Emma Bolderson1, Nozomi Tomimatsu2, Derek J. Richard1, Didier Boucher1
+,
+Rakesh Kumar3, Tej K. Pandita3, Sandeep Burma2 and Kum Kum Khanna1,*
+1Signal Transduction Laboratory, Queensland Institute of Medical Research, Brisbane, Queensland 4029,
+Australia, 2Department of Radiation Oncology, UT Southwestern Medical Center at Dallas, Dallas, TX
+75390-9187 and 3Department of Radiation Oncology, Washington University School of Medicine, St Louis,
+MO 63108, USA
+Received October 22, 2009; Revised November 18, 2009; Accepted November 24, 2009
+ABSTRACT
+DNA double-strand break (DSB) repair via the
+homologous recombination pathway is a multi-
+stage process, which results in repair of the DSB
+without loss of genetic information or fidelity. One
+essential step in this process is the generation of
+extended single-stranded DNA (ssDNA) regions at
+the break site. This ssDNA serves to induce cell
+cycle checkpoints and is required for Rad51
+mediated strand invasion of the sister chromatid.
+Here, we show that human Exonuclease 1 (Exo1) is
+required for the normal repair of DSBs by HR. Cells
+depleted of Exo1 show chromosomal instability and
+hypersensitivity to ionising radiation (IR) exposure.
+We find that Exo1 accumulates rapidly at DSBs and
+is required for the recruitment of RPA and Rad51 to
+sites of DSBs, suggesting a role for Exo1 in ssDNA
+generation. Interestingly, the phosphorylation of
+Exo1 by ATM appears to regulate the activity of
+Exo1 following resection, allowing optimal Rad51
+loading and the completion of HR repair. These
+data establish a role for Exo1 in resection of DSBs
+in human cells, highlighting the critical requirement
+of Exo1 for DSB repair via HR and thus the mainte-
+nance of genomic stability.
+INTRODUCTION
+DNA double-strand breaks (DSBs) can be induced by a
+variety of factors such as chemotherapeutic agents,
+ionising radiation (IR) and by the products of cellular
+metabolism, including replication fork collapse. In order
+to maintain genomic stability, cells possess a complex
+network of signalling pathways involved in the detection,
+signalling and repair of DNA damage. Defects in these
+DNA repair pathways can lead to human genomic insta-
+bility syndromes, with increased cancer susceptibility, neu-
+rological syndromes and immunodeficiency. The resection
+of DSBs to produce 30 single-stranded DNA (ssDNA)
+tracts is a critical step in the repair of DSBs by homolo-
+gous recombination (1). The ssDNA at the break site is
+essential for activation of the ATR signalling cascade
+which re-enforces ATM-induced cell cycle checkpoints
+(2). The MRN (MRE11, Rad50 and NBS1) complex, in
+association with CtIP, has been previously reported to be
+important for DSB resection (3). However, recent reports
+clearly indicate that yeast MRX (Mre11, Rad50 and
+XRS1) is involved only in limited resection at the break
+sites while extensive resection requires additional, redun-
+dant nucleases such as Exonuclease 1 (Exo1) and/or
+DNA2 (4).
+"""]
 
 questions = ["What is the paper title?",
             "What is the authors of the paper?"]
 
-for i in range(len(contexts)):
-    for j in range(len(questions)):
-        print (f"Context {i}, Question {j}")
-        context = contexts[i]
-        question = questions[j]
-        if context.strip():
-            prompt = f"Context: {context}\nQuestion: {question}\nAnswer:"
-        else:
-            prompt = f"Question: {question}\nAnswer:"
+if __name__ == "__main__":
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModel.from_pretrained(model_name, output_attentions=True, load_in_4bit=True, device_map="auto")
 
-        inputs = tokenizer.encode(prompt, return_tensors='pt')
-        outputs = model(inputs)
-        print(outputs)
-        attention = outputs[-1]
-        tokens = tokenizer.convert_ids_to_tokens(inputs[0])
-        # save the attention weights into a file
+    for i in range(len(contexts)):
+        for j in range(len(questions)):
+            print (f"Context {i}, Question {j}")
+            context = contexts[i]
+            question = questions[j]
+            if context.strip():
+                prompt = f"Context: {context}\nQuestion: {question}\nAnswer:"
+            else:
+                prompt = f"Question: {question}\nAnswer:"
 
+            inputs = tokenizer.encode(prompt, return_tensors='pt')
+            outputs = model(inputs)
+            print(len(outputs))
+            attention = outputs[-1]
+            tokens = tokenizer.convert_ids_to_tokens(inputs[0])
+            # save the attention weights into a file
 
-        with open(f'../data/tensor/context{i}-question{j}_attention.pkl', 'wb') as f:
-            pickle.dump(attention, f)
+            print(f"Attention shape: {len(attention)}")
+            print(f"tokens length: {len(tokens)}")
+            with open(f'../data/tensor/context3-2{i}-question{j}_attention.pkl', 'wb') as f:
+                pickle.dump(attention, f)
 
-        # save the tokens into a file
-        with open(f'../data/tensor/context{i}-question{j}_tokens.pkl', 'wb') as f:
-            pickle.dump(tokens, f)
-print(f"Done with {len(contexts)} contexts and {len(questions)} questions")
+            # save the tokens into a file
+            with open(f'../data/tensor/context3-2{i}-question{j}_tokens.pkl', 'wb') as f:
+                pickle.dump(tokens, f)
+    print(f"Done with {len(contexts)} contexts and {len(questions)} questions")

@@ -26,10 +26,8 @@
             "What statutory authority is used to propose the Compliance Order?",
             "What are the state abbreviation and ZIP code of the company?",
             "What is the date of the notice?",
-            "What is the civil penalty amount suggested for the probable violation?",
             "What is the type of violation item?",
-            "What are the violation items?",
-            "What statutory authority is used to propose the Compliance Order?"
+            "What are the violation items?"
         ],
         "CIVIC_QUESTIONS": [
             "What is the name of the project?",

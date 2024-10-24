@@ -3,31 +3,35 @@ import json
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
-import dsp
 import dspy
 
-from dspy_interface import dspyCOT, VeriCorrectness
 from rouge_score import rouge_scorer
 
 # Initialize the ROUGE scorer
 scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
 
 
-class ValidationWithTestAndGroundTruth(dspy.Signature):
-    """Compare the test result with the ground truth"""
+def cosine_distance(input_a, input_b, model):
+    """
+    Calculate the cosine similarity between two inputs using a specified model.
 
-    context = dspy.InputField(desc="a statement of a scientific paper as ground truth")
-    question = dspy.InputField(desc="another statement of a scientific paper as a test")
-    answer = dspy.OutputField(desc="Please print the result of the comparison. If the test is the sementically similar to the ground truth, print 'True'. Otherwise, print 'False'.")
+    Args:
+    input_a (str): The first input text.
+    input_b (str): The second input text.
+    model (SentenceTransformer): A SentenceTransformer model used for embedding the texts.
 
-class ValidationCorrectnessSignature(dspy.Signature):
-    """Verify if the predicted answer semantically matches the gold answer. And return boolean value."""
+    Returns:
+    float: The cosine similarity between the two input embeddings.
+    """
+    # Encode the inputs using the provided model
+    embeddings = model.encode([input_a, input_b])
 
-    question = dspy.InputField(desc="a question of a scientific paper")
-    gold_answer = dspy.InputField(desc="a statement of a scientific paper as ground truth")
-    predicted_answer = dspy.InputField(desc="another statement of a scientific paper as a test")
-    is_correct = dspy.OutputField(desc="Please print the result of the comparison in 'True' or 'False'. If the test is the sementically similar to the ground truth, print 'True'. Otherwise, print 'False'.")
+    # Calculate cosine similarity between the embeddings
+    similarity = cosine_similarity([embeddings[0]], [embeddings[1]])
+
+    # Return the cosine similarity value
+    return similarity[0][0]
+
 
 def evaluate_results(results_file, groundtruth_file, acc_file):
 
@@ -45,7 +49,6 @@ def evaluate_results(results_file, groundtruth_file, acc_file):
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
-    verification_cot = VeriCorrectness(ValidationCorrectnessSignature)
     cnt = 0
     for result in results["files"]:
         file = result["file"]
