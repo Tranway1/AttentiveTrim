@@ -251,8 +251,8 @@ def run_reverse_engineer(dataset):
 
 if __name__ == "__main__":
 
-    dataset = "notice"
-    # dataset = "paper"
+    # dataset = "notice"
+    dataset = "paper"
     run_reverse_engineer(dataset)
 
 

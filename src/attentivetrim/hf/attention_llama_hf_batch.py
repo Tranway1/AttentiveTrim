@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import base64
 import json
 import gc
@@ -20,8 +21,10 @@ HOME_DIR = Path.home()
 
 
 def print_gpu_memory():
-    print(f"Allocated memory: {torch.cuda.memory_allocated() / 1024**2:.2f} MB")
-    print(f"Cached memory: {torch.cuda.memory_reserved() / 1024**2:.2f} MB")
+    allocated_memory = torch.cuda.memory_allocated() / 1024**2
+    cached_memory = torch.cuda.memory_reserved() / 1024**2
+    print("Allocated memory: {:.2f} MB".format(allocated_memory))
+    print("Cached memory: {:.2f} MB".format(cached_memory))
 
 
 def savitzky_golay(y, window_size, order, deriv=0, rate=1):
@@ -191,7 +194,7 @@ def colorize(tokens, attention_scores, original_scores, titlestr="Attention Scor
     print(f"min: {np.min(attention_scores)}, max: {np.max(attention_scores)}")
     normalized_scores = (attention_scores - np.min(attention_scores)) / (
                 np.max(attention_scores) - np.min(attention_scores))
-    cmap = matplotlib.colormaps['viridis']
+    cmap = matplotlib.colormaps['cividis']
     if smooth:
         normalized_scores = smooth_attention(normalized_scores)
 
@@ -316,7 +319,7 @@ def colorize_distance_from_zero(tokens, attention_scores, original_scores, title
     return header_html + '<br>' + colored_string
 
 
-def print_tokens_with_attention_head(attention, tokens, layer, head, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
+def print_tokens_with_attention_head(dataset, attention, tokens, layer, head, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
     print("Token idx, token string, Log Attention Score")
     attention_scores = torch.sum(attention[layer][0][head][-question_token_length:], dim=0).detach().numpy()
     # normalize the attention scores - divide by question_token_length
@@ -329,14 +332,14 @@ def print_tokens_with_attention_head(attention, tokens, layer, head, question_to
 
     html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr=f"Attention Scores for Layer {layer}, Head {head}")
     if chunk_idx is None:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}.html', 'w') as f:
+        with open(f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}.html', 'w') as f:
             f.write(html_string)
     else:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}_{chunk_idx}.html', 'w') as f:
+        with open(f'../data/html/{dataset}_{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}_{chunk_idx}.html', 'w') as f:
             f.write(html_string)
     return attention_scores
 
-def print_tokens_with_attention_layer(attention, tokens, layer, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
+def print_tokens_with_attention_layer(dataset, attention, tokens, layer, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
     """ Print tokens along with log-transformed attention scores for a specific layer and head, and generate a color-coded HTML output. """
     print("Token idx, token string, Log Attention Score")
     att = attention[layer]
@@ -356,15 +359,15 @@ def print_tokens_with_attention_layer(attention, tokens, layer, question_token_l
     # Generate colorized HTML string
     html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr=f"Attention Scores for Layer {layer}")
     if chunk_idx is None:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_layer_{layer}.html', 'w') as f:
+        with open(f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_layer_{layer}.html', 'w') as f:
             f.write(html_string)
     else:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_layer_{layer}_{chunk_idx}.html', 'w') as f:
+        with open(f'../data/html/{dataset}_{c_idx}_{q_idx}_attention_colorized_layer_{layer}_{chunk_idx}.html', 'w') as f:
             f.write(html_string)
     return attention_scores
 
 
-def print_tokens_with_attention_whole(attention, tokens, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
+def print_tokens_with_attention_whole(dataset, attention, tokens, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
     """ Print tokens along with log-transformed attention scores aggregated across all layers, and generate a color-coded HTML output. """
     print("Token idx, token string, Log Attention Score")
     total_attention = torch.zeros_like(attention[0][0][0])  # Initialize with the shape of one head's attention
@@ -388,14 +391,14 @@ def print_tokens_with_attention_whole(attention, tokens, question_token_length=1
 
     html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr="Attention Scores for Whole Layers")
     if chunk_idx is None:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_whole.html', 'w') as f:
+        with open(f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_whole.html', 'w') as f:
             f.write(html_string)
     else:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_whole_{chunk_idx}.html', 'w') as f:
+        with open(f'../data/html/{dataset}_{c_idx}_{q_idx}_attention_colorized_whole_{chunk_idx}.html', 'w') as f:
             f.write(html_string)
     return attention_scores
 
-def print_tokens_with_scores(attention_scores, tokens, mode, c_idx, q_idx, layer=0, head=0):
+def print_tokens_with_scores(dataset, attention_scores, tokens, mode, c_idx, q_idx, layer=0, head=0):
     """ Print tokens along with attention scores and generate a color-coded HTML output. """
     print("Token idx, token string, Attention Score")
     print(f"Attention scores shape: {attention_scores.shape}")
@@ -406,27 +409,27 @@ def print_tokens_with_scores(attention_scores, tokens, mode, c_idx, q_idx, layer
     # Generate colorized HTML string
     if mode == "head":
         html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr=f"Attention Scores for Layer {layer}, Head {head}")
-        file_path = f'../data/html/{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}.html'
+        file_path = f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_head_{layer}_{head}.html'
         with open(file_path, 'w') as f:
             f.write(html_string)
     elif mode == "layer":
         html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr=f"Attention Scores for Layer {layer}")
-        file_path = f'../data/html/{c_idx}_{q_idx}_attention_colorized_layer_{layer}.html'
+        file_path = f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_layer_{layer}.html'
         with open(file_path, 'w') as f:
             f.write(html_string)
     elif mode == "whole":
         html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr="Attention Scores for Whole Layers")
-        file_path = f'../data/html/{c_idx}_{q_idx}_attention_colorized_whole.html'
+        file_path = f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_whole.html'
         with open(file_path, 'w') as f:
             f.write(html_string)
     elif mode == "selected":
         html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:], titlestr="Attention Scores for Selected Heads")
-        file_path = f'../data/html/{c_idx}_{q_idx}_attention_colorized_selected_heads.html'
+        file_path = f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_selected_heads.html'
         with open(file_path, 'w') as f:
             f.write(html_string)
     print(f"HTML file with mode {mode} saved at: {file_path}")
 
-def print_tokens_with_selected_attention_heads(attention, tokens, selected_heads, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
+def print_tokens_with_selected_attention_heads(dataset, attention, tokens, selected_heads, question_token_length=10,q_idx=0, c_idx=0, chunk_idx=None):
     """
     Print tokens along with log-transformed attention scores aggregated from selected attention heads,
     and generate a color-coded HTML output.
@@ -462,14 +465,14 @@ def print_tokens_with_selected_attention_heads(attention, tokens, selected_heads
     html_string = colorize(tokens[1:], log_attention_scores[1:], attention_scores[1:],
                            titlestr="Attention Scores for Selected Heads")
     if chunk_idx is None:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_selected_heads.html', 'w') as f:
+        with open(f'../data/html/full/{dataset}_{c_idx}_{q_idx}_attention_colorized_selected_heads.html', 'w') as f:
             f.write(html_string)
     else:
-        with open(f'../data/html/{c_idx}_{q_idx}_attention_colorized_selected_heads_{chunk_idx}.html', 'w') as f:
+        with open(f'../data/html/{dataset}_{c_idx}_{q_idx}_attention_colorized_selected_heads_{chunk_idx}.html', 'w') as f:
             f.write(html_string)
     return attention_scores
 
-def print_tokens_with_trimmed_attention_whole_diff(attention_a, tokens_a, attention_b, tokens_b, qa_idx=0, qb_idx=0, c_idx=0, context_ends=10, notes="", chunk_idx=None):
+def print_tokens_with_trimmed_attention_whole_diff(dataset, attention_a, tokens_a, attention_b, tokens_b, qa_idx=0, qb_idx=0, c_idx=0, context_ends=10, notes="", chunk_idx=None):
 
     attention_scores_a = attention_a
 
@@ -479,6 +482,7 @@ def print_tokens_with_trimmed_attention_whole_diff(attention_a, tokens_a, attent
     print(f"Attention scores b shape: {attention_scores_b.shape}")
     # check attention_scores shape and truncate the larger one to the smaller one and then subtract them to get the difference
     context_boundary = context_ends
+    print(f"Context boundary: {context_boundary}")
 
     attention_scores_a = attention_scores_a[:context_boundary]
     attention_scores_b = attention_scores_b[:context_boundary]
@@ -494,17 +498,17 @@ def print_tokens_with_trimmed_attention_whole_diff(attention_a, tokens_a, attent
     html_string = colorize_distance_from_zero(tokens_a[1:context_boundary], attention_diff[1:context_boundary], attention_diff[1:context_boundary], titlestr=f"Attention Scores Difference between questions Att{qa_idx}-Att{qb_idx}<br>{notes}")
     # html_string = colorize(tokens_a[1:context_boundary], attention_diff[1:context_boundary], attention_diff[1:context_boundary], titlestr=f"Attention Scores Difference between questions Att{qa_idx}-Att{qb_idx}<br>{notes}")
     if chunk_idx is None:
-        with open(f'../data/html/{c_idx}_{qa_idx}_{qb_idx}_attention_colorized_whole_diff.html', 'w') as f:
+        with open(f'../data/html/full/{dataset}_{c_idx}_{qa_idx}_{qb_idx}_attention_colorized_whole_diff.html', 'w') as f:
             f.write(html_string)
     else:
-        with open(f'../data/html/{c_idx}_{qa_idx}_{qb_idx}_attention_colorized_whole_diff_{chunk_idx}.html', 'w') as f:
+        with open(f'../data/html/{dataset}_{c_idx}_{qa_idx}_{qb_idx}_attention_colorized_whole_diff_{chunk_idx}.html', 'w') as f:
             f.write(html_string)
     return attention_diff
 
 
 
 
-def process_context_with_chunks(context, question, tokenizer, model, token_dir, attention_summary_dir, dataset, file_idx, query_idx, top_10_heads=None, top_10_layers=None, chunk_size=8000, overlap=50, whole_only=False):
+def process_context_with_chunks(context, question, tokenizer, model, token_dir, attention_summary_dir, dataset, file_idx, query_idx, top_10_heads=None, top_10_layers=None, chunk_size=10000, overlap=50, whole_only=False):
     chunked_context = []
     q_offset = 0
     print(f"Processing file {file_idx} with chunking instead of the whole context")
@@ -532,7 +536,11 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
 
         except RuntimeError as e:
             print(f"RuntimeError while processing file {file_idx} on chunk {chunk_idx}: {e}")
+            print_gpu_memory()
+            gc.collect()  # Explicitly invoke garbage collector
             torch.cuda.empty_cache()
+            print("Memory freed")
+            print_gpu_memory()
             continue
 
         print(len(outputs))
@@ -558,21 +566,21 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
             best_layer = top_10_layers[0]
 
             # Example function calls (you need to define these functions or adjust according to your actual use case)
-            attention_head = print_tokens_with_attention_head(attention, tokens, layer_idx, head_idx,
+            attention_head = print_tokens_with_attention_head(dataset, attention, tokens, layer_idx, head_idx,
                                                               question_token_length=endq_token_idx - startq_token_idx,
                                                               q_idx=query_idx, c_idx=file_idx, chunk_idx=chunk_idx)
-            attention_layer = print_tokens_with_attention_layer(attention, tokens, best_layer,
+            attention_layer = print_tokens_with_attention_layer(dataset, attention, tokens, best_layer,
                                                                 question_token_length=endq_token_idx - startq_token_idx,
                                                                 q_idx=query_idx, c_idx=file_idx, chunk_idx=chunk_idx)
 
-            attention_selected = print_tokens_with_selected_attention_heads(attention, tokens, top_10_heads[:5],
+            attention_selected = print_tokens_with_selected_attention_heads(dataset, attention, tokens, top_10_heads[:5],
                                                                         question_token_length=endq_token_idx - startq_token_idx,
                                                                         q_idx=query_idx, c_idx=file_idx,
                                                                         chunk_idx=chunk_idx)
             best_heads.append(attention_head)
             best_layers.append(attention_layer)
             selected_heads.append(attention_selected)
-        attention_summary = print_tokens_with_attention_whole(attention, tokens, question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx, c_idx=file_idx, chunk_idx=chunk_idx)
+        attention_summary = print_tokens_with_attention_whole(dataset, attention, tokens, question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx, c_idx=file_idx, chunk_idx=chunk_idx)
         wholes.append(attention_summary)
         token_arr.append(tokens)
 
@@ -596,6 +604,19 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
         print("Memory freed")
         print_gpu_memory()
 
+    # get the longest token array and normalize the attention scores by * len(token_arr[i])/max_len
+    max_len = max([len(t) for t in token_arr])
+    print(f"Normalized by max token length: {max_len}")
+    for i in range(len(wholes)):
+        print(f"Normalizing chunk {i} with length {len(token_arr[i])} / {max_len}")
+        wholes[i] = wholes[i] * len(token_arr[i]) / max_len
+        if not whole_only:
+            best_heads[i] = best_heads[i] * len(token_arr[i]) / max_len
+            best_layers[i] = best_layers[i] * len(token_arr[i]) / max_len
+            selected_heads[i] = selected_heads[i] * len(token_arr[i]) / max_len
+
+
+
     # merge all the chunks
     if not whole_only:
         merged_best_heads = best_heads[0][:-q_offset]
@@ -608,7 +629,7 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
         print(f"Merging chunk {i}")
         if not whole_only:
 
-            merged_best_heads = np.concatenate((merged_seleted_heads, best_heads[i][3:-q_offset]))
+            merged_best_heads = np.concatenate((merged_best_heads, best_heads[i][3:-q_offset]))
             merged_best_layers = np.concatenate((merged_best_layers, best_layers[i][3:-q_offset]))
             merged_seleted_heads = np.concatenate((merged_seleted_heads, selected_heads[i][3:-q_offset]))
         merged_wholes = np.concatenate((merged_wholes, wholes[i][3:-q_offset]))
@@ -625,80 +646,19 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
 
     # Draw the html for the merged tokens
     if not whole_only:
-        print_tokens_with_scores(merged_best_heads, merged_tokens, "head", file_idx, query_idx, top_10_heads[0][0], top_10_heads[0][1])
-        print_tokens_with_scores(merged_best_layers, merged_tokens, "layer", file_idx, query_idx, top_10_layers[0])
-        print_tokens_with_scores(merged_seleted_heads, merged_tokens, "selected", file_idx, query_idx)
-    print_tokens_with_scores(merged_wholes, merged_tokens, "whole", file_idx, query_idx)
+        print_tokens_with_scores(dataset, merged_best_heads, merged_tokens, "head", file_idx, query_idx, top_10_heads[0][0], top_10_heads[0][1])
+        print_tokens_with_scores(dataset, merged_best_layers, merged_tokens, "layer", file_idx, query_idx, top_10_layers[0])
+        print_tokens_with_scores(dataset, merged_seleted_heads, merged_tokens, "selected", file_idx, query_idx)
+    print_tokens_with_scores(dataset, merged_wholes, merged_tokens, "whole", file_idx, query_idx)
 
     return merged_wholes, merged_tokens
 
 
 
-def process_baseline_query_in_chunks(context, tokenizer, model, attention_summary_dir, dataset, file_idx,
-                                   chunk_size = 8000, overlap = 50, baseline_query="Please repeat the context."):
-
-    chunked_context = []
-    cnt = 0
-
-    # Chunk the context
-    for i in range(0, len(context), chunk_size - overlap):
-        chunked_context.append(context[i:i + chunk_size])
-        print(f"chunk {i} starts at {i} and ends at {i + chunk_size}")
-
-    print(f"Total chunks: {len(chunked_context)}")
-
-    # Process each chunk
-    for chunk_idx, chunk in enumerate(chunked_context):
-        print(f"Processing chunk {chunk_idx}")
-        repeat_query = baseline_query
-        if chunk.strip():
-            prompt = f"Context: {chunk}\nQuestion: {repeat_query}\nAnswer:"
-        else:
-            prompt = f"Question: {repeat_query}\nAnswer:"
-
-        try:
-            inputs = tokenizer.encode(prompt, return_tensors='pt')
-            outputs = model(inputs)
-            cnt += 1
-        except RuntimeError as e:
-            print(f"RuntimeError while processing file {file_idx} on chunk {chunk_idx}: {e}")
-            torch.cuda.empty_cache()
-            continue
-
-        print(len(outputs))
-        repeat_attention = outputs[-1]
-        repeat_tokens = tokenizer.convert_ids_to_tokens(inputs[0])
-
-        print(f"Attention shape: {len(repeat_attention)}")
-        print(f"tokens length: {len(repeat_tokens)}")
-
-        # Get question range in the tokens
-        repeat_question_section = f"Question: {repeat_query}\nAnswer:"
-        print(f"{repeat_question_section}")
-        print(f"Question section length: {len(repeat_question_section)}")
-        startq_token_idx, endq_token_idx = get_token_range_from_char_range(repeat_tokens, -len(repeat_question_section), 0)
-        print(f"Question token range: {startq_token_idx}, {endq_token_idx}")
-
-        repeat_attention_summary = print_tokens_with_attention_whole(repeat_attention, repeat_tokens, question_token_length=endq_token_idx - startq_token_idx, q_idx=-1, c_idx=file_idx)
-
-        # Save the attention summary
-        repeat_attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_{chunk_idx}_-1.npy"
-        with open(repeat_attention_summary_file, 'wb') as f:
-            np.save(f, repeat_attention_summary)
-
-        del repeat_attention
-        del repeat_tokens
-        gc.collect()  # Explicitly invoke garbage collector
-        torch.cuda.empty_cache()
-        print("Memory freed")
-
-
 def process_file_question(dataset, query_idx, question, file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                          top_10_heads_parse=None, top_10_layers_parse=None, chunk_size=8000, overlap=50, whole_only=False):
+                          top_10_heads_parse=None, top_10_layers_parse=None, chunk_size=10000, overlap=50, whole_only=False):
     global outputs, inputs
     print(f"Processing file {file_idx} with question: {question}")
-
-
     if context.strip():
         prompt = f"Context: {context}\nQuestion: {question}\nAnswer:"
     else:
@@ -709,18 +669,21 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
     attention = None
 
     enable_chunking = False
-    try:
-        inputs = tokenizer.encode(prompt, return_tensors='pt')
-        outputs = model(inputs)
-    except RuntimeError as e:
-        print_gpu_memory()
+    if len(context) < chunk_size:
+        try:
+            inputs = tokenizer.encode(prompt, return_tensors='pt')
+            outputs = model(inputs)
+            print(f"Processing the full context {file_idx} as a whole")
+        except RuntimeError as e:
+            print_gpu_memory()
+            enable_chunking = True
+            print(f"RuntimeError while processing the full context  {file_idx} as a whole: {e}")
+            gc.collect()
+            torch.cuda.empty_cache()
+            print("Memory freed")
+            print_gpu_memory()
+    else:
         enable_chunking = True
-        print_gpu_memory()
-        print(f"RuntimeError while processing the full context  {file_idx} as a whole: {e}")
-        gc.collect()
-        torch.cuda.empty_cache()
-        print("Memory freed")
-        print_gpu_memory()
 
     if enable_chunking:
         print_gpu_memory()
@@ -731,7 +694,6 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
                                                                   top_10_heads=top_10_heads_parse,
                                                                   top_10_layers=top_10_layers_parse,
                                                                   chunk_size=chunk_size, overlap=overlap, whole_only=whole_only)
-
         tokens = merged_tokens
         attention_summary = merged_whole
     else:
@@ -753,17 +715,17 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
             assert top_10_heads_parse is not None
             layer_idx, head_idx = top_10_heads_parse[0]
             best_layer = top_10_layers_parse[0]
-            print_tokens_with_attention_head(attention, tokens, layer_idx, head_idx,
+            print_tokens_with_attention_head(dataset, attention, tokens, layer_idx, head_idx,
                                              question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx,
                                              c_idx=file_idx)
-            print_tokens_with_attention_layer(attention, tokens, best_layer,
+            print_tokens_with_attention_layer(dataset, attention, tokens, best_layer,
                                               question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx,
                                               c_idx=file_idx)
-            print_tokens_with_selected_attention_heads(attention, tokens, top_10_heads_parse[:5],
+            print_tokens_with_selected_attention_heads(dataset, attention, tokens, top_10_heads_parse[:5],
                                                        question_token_length=endq_token_idx - startq_token_idx,
                                                        q_idx=query_idx, c_idx=file_idx)
 
-        attention_summary = print_tokens_with_attention_whole(attention, tokens,
+        attention_summary = print_tokens_with_attention_whole(dataset, attention, tokens,
                                                               question_token_length=endq_token_idx - startq_token_idx,
                                                               q_idx=query_idx, c_idx=file_idx)
 
@@ -792,7 +754,7 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
 
 
 
-def run_dataset_analysis(model_name, dataset, whole_only = False):
+def run_dataset_analysis(model_name, dataset, whole_only = False, chunk_size=10000, overlap=50):
     # 0: <|begin_of_text|>, 17
     # 1: Context, 7
     # 2: :, 1
@@ -821,9 +783,7 @@ def run_dataset_analysis(model_name, dataset, whole_only = False):
         layer_count = {}
         head_count = {}
         print(f"Processing question: {question} on dataset: {dataset}")
-        cnt = 0
-        with open(f"../../../grd_loc/{dataset}_{question}-location.json", 'r') as f:
-            json_obj = json.loads(f.read())
+
 
         top_10_layers = layer_stats[dataset].get(question, {})
         top_10_heads = head_stats[dataset].get(question, {})
@@ -845,12 +805,12 @@ def run_dataset_analysis(model_name, dataset, whole_only = False):
         if len(top_10_heads_parse) == 0 or len(top_10_layers_parse) == 0:
             whole_only = True
 
-        for file_idx, entry in enumerate(json_obj["files"]):
-            print(f"Processing file {file_idx}: {entry['file']}")
+        for file_idx, file_add in enumerate(file_list):
+            print(f"Processing file {file_idx}: {file_add}")
 
-            file_path = entry["file"].replace("/Users/chunwei/research/", f"{HOME_DIR}/")
+            file_path = file_add.replace("/Users/chunwei/research/", f"{HOME_DIR}/")
             if HOME_DIR == "/home/chunwei":
-                file_path = (entry["file"].replace("/Users/chunwei/research/", f"{HOME_DIR}/").replace("(", "\\( ").replace(")", "\\)"))
+                file_path = (file_add.replace("/Users/chunwei/research/", f"{HOME_DIR}/").replace("(", "\\( ").replace(")", "\\)"))
             with open(file_path, 'r') as f:
                 json_obj = json.loads(f.read())
             context = json_obj["symbols"]
@@ -858,13 +818,13 @@ def run_dataset_analysis(model_name, dataset, whole_only = False):
 
             # call the function to process the context per file and question
             process_file_question(dataset, query_idx, question, file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                                    top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=8000, overlap=50, whole_only=whole_only)
+                                    top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=chunk_size, overlap=overlap, whole_only=whole_only)
 
             # Run baseline query processing with the first question
-            if file_idx == 0:
+            if query_idx == 0:
                 # process the baseline query
                 process_file_question(dataset, -1, "Please repeat the context.", file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                                      top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=8000, overlap=50, whole_only=True)
+                                      top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=chunk_size, overlap=overlap, whole_only=True)
 
 
     print(f"Done with {dataset} set and {len(questions)} questions")
@@ -872,13 +832,11 @@ def run_dataset_analysis(model_name, dataset, whole_only = False):
 
 
 
-def run_differential_attention(model_name, dataset, chunk_size=8000, overlap=50):
+def run_differential_attention(model_name, dataset, chunk_size=10000, overlap=50):
     config_path = '../../../questions/question.json'
     with open(config_path) as f:
         data = json.load(f)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name, output_attentions=True, load_in_4bit=True, device_map="auto")
     print(f"Model loaded: {model_name}")
 
     file_list = data["datasets"][dataset]["list"]
@@ -898,40 +856,33 @@ def run_differential_attention(model_name, dataset, chunk_size=8000, overlap=50)
 
     for file_idx, f_path in enumerate(file_list):
         print(f"Processing file {file_idx}: {f_path}")
-        file_path = f_path.replace("/Users/chunwei/research/", f"{HOME_DIR}/")
-        if HOME_DIR == "/home/chunwei":
-            file_path = (f_path.replace("/Users/chunwei/research/", f"{HOME_DIR}/").replace("(", "\\(").replace(")", "\\)"))
-        with open(file_path, 'r') as f:
-            json_obj = json.loads(f.read())
-        context = json_obj["symbols"]
-
-        # calculate the number of chunks and round up
-        num_chunks = math.ceil(len(context) /( chunk_size- overlap))
-
 
         for query_idx, question in enumerate(questions):
             farest_query_idx = faraway_query[query_idx]
             print(f"Processing question: {question} on dataset: {dataset}")
             token_file = f"{token_dir}/{dataset}_{file_idx}.json"
             cur_attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_{query_idx}.npy"
-            farest_attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_{farest_query_idx}.npy"
+            farmost_attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_{farest_query_idx}.npy"
             repeat_attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_-1.npy"
+
+            with open(token_file, 'r') as f:
+                tokens = json.load(f)
+
             # Get question range in the tokens
             question_section = f"Question: {questions[0]}\nAnswer:"
             print(f"{question_section}")
             print(f"Question section length: {len(question_section)}")
             startq_token_idx, endq_token_idx = get_token_range_from_char_range(tokens, -len(question_section), 0)
+            print(f"Question token range: {startq_token_idx}, {endq_token_idx}")
             # check if attention summary file exists
-            if os.path.exists(cur_attention_summary_file) and os.path.exists(farest_attention_summary_file):
+            if os.path.exists(cur_attention_summary_file) and os.path.exists(farmost_attention_summary_file):
                 print(f"comparing with question {query_idx} with {farest_query_idx}")
-                with open(token_file, 'r') as f:
-                    tokens = json.load(f)
                 with open(cur_attention_summary_file, 'rb') as f:
                     cur_attention_summary = np.load(f)
-                with open(farest_attention_summary_file, 'rb') as f:
+                with open(farmost_attention_summary_file, 'rb') as f:
                     farest_attention_summary = np.load(f)
 
-                attention_diff = print_tokens_with_trimmed_attention_whole_diff(cur_attention_summary, tokens,
+                attention_diff = print_tokens_with_trimmed_attention_whole_diff(dataset, cur_attention_summary, tokens,
                                                                                farest_attention_summary, tokens,
                                                                                qa_idx=query_idx, qb_idx=farest_query_idx,
                                                                                c_idx=file_idx, context_ends = startq_token_idx-1,
@@ -943,21 +894,17 @@ def run_differential_attention(model_name, dataset, chunk_size=8000, overlap=50)
                 # Explicitly delete attention and tokens to free up memory
                 del cur_attention_summary
                 del farest_attention_summary
-                del tokens
-                gc.collect()
-                torch.cuda.empty_cache()
+
 
 
 
             if os.path.exists(repeat_attention_summary_file) and os.path.exists(cur_attention_summary_file):
                 print(f"comparing with question {query_idx} with repeat baseline")
-                with open(token_file, 'r') as f:
-                    tokens = json.load(f)
                 with open(cur_attention_summary_file, 'rb') as f:
                     cur_attention_summary = np.load(f)
                 with open(repeat_attention_summary_file, 'rb') as f:
                     repeat_attention_summary = np.load(f)
-                attention_diff = print_tokens_with_trimmed_attention_whole_diff(cur_attention_summary, tokens,
+                attention_diff = print_tokens_with_trimmed_attention_whole_diff(dataset, cur_attention_summary, tokens,
                                                                                repeat_attention_summary, tokens,
                                                                                qa_idx=query_idx, qb_idx=-1,
                                                                                c_idx=file_idx, context_ends = startq_token_idx-1,
@@ -969,9 +916,9 @@ def run_differential_attention(model_name, dataset, chunk_size=8000, overlap=50)
                 # Explicitly delete attention and tokens to free up memory
                 del cur_attention_summary
                 del repeat_attention_summary
-                del tokens
-                gc.collect()
-                torch.cuda.empty_cache()
+            del tokens
+            gc.collect()
+            torch.cuda.empty_cache()
 
 
 
@@ -984,10 +931,8 @@ if __name__ == "__main__":
     # local_model_path = f'{HOME_DIR}/hf/dbrx-instruct/'
     model_name = f"{HOME_DIR}/hf/Llama-3.2-1B-Instruct"
 
-    dataset = "notice"
-    # dataset = "paper"
-    run_dataset_analysis(model_name, dataset)
+    # dataset = "notice"
+    dataset = "paper"
+    run_dataset_analysis(model_name, dataset, chunk_size=8000, overlap=50)
     print("================= Done with dataset analysis, now starting differential attention analysis =================")
-    run_differential_attention(model_name, dataset)
-
-
+    run_differential_attention(model_name, dataset,chunk_size=8000, overlap=50)

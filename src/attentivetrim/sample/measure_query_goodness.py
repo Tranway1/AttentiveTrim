@@ -81,7 +81,7 @@ def measure_goodness(dataset, model='gpt-4-1106-preview', sample_ratio=0.3, init
     chosen_files = random.sample(files, sample_size)
     print(f"Chosen files size: {len(chosen_files)}")
 
-    for question in questions:
+    for question in questions[:2]:
         print(f"Question: {question}")
         result = {}
         result["question"] = question
@@ -184,6 +184,6 @@ def format_output(dataset, iteration = 3):
 
 
 if __name__ == "__main__":
-    # measure_goodness("paper", model='gpt-4-1106-preview', sample_ratio=0.3, init_seed=0, iteration=3)
-    # goodness_score("notice", iteration=3)
+    measure_goodness("paper", model='gpt-4-1106-preview', sample_ratio=0.3, init_seed=0, iteration=3)
+    goodness_score("paper", iteration=3)
     format_output("paper", iteration=3)
