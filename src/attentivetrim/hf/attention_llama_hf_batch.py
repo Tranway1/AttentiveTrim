@@ -9,10 +9,8 @@ from math import factorial
 
 import matplotlib
 import numpy as np
-from gitdb.fun import chunk_size
 from matplotlib import pyplot as plt
 from matplotlib.colorbar import ColorbarBase
-from torch.onnx.symbolic_opset11 import chunk
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoModel
 import torch
 
@@ -508,14 +506,14 @@ def print_tokens_with_trimmed_attention_whole_diff(dataset, attention_a, tokens_
 
 
 
-def process_context_with_chunks(context, question, tokenizer, model, token_dir, attention_summary_dir, dataset, file_idx, query_idx, top_10_heads=None, top_10_layers=None, chunk_size=10000, overlap=50, whole_only=False):
+def process_context_with_chunks(context_token, question, tokenizer, model, token_dir, attention_summary_dir, dataset, file_idx, query_idx, top_10_heads=None, top_10_layers=None, chunk_size_token=1500, overlap_token=0, whole_only=False):
     chunked_context = []
     q_offset = 0
     print(f"Processing file {file_idx} with chunking instead of the whole context")
     # Chunk the context
-    for i in range(0, len(context), chunk_size - overlap):
-        chunked_context.append(context[i:i + chunk_size])
-        print(f"chunk {i} starts at {i} and ends at {i + chunk_size}")
+    for i in range(0, len(context_token), chunk_size_token - overlap_token):
+        chunked_context.append(context_token[i:i + chunk_size_token])
+        print(f"chunk {i} starts at token {i} with first 5 tokens {tokenizer.convert_tokens_to_string(context_token[i:i+5])} and ends at token {i + chunk_size_token} with last 5 tokens {tokenizer.convert_tokens_to_string(context_token[i + chunk_size_token-5:i + chunk_size_token])}")
 
     print(f"Total chunks: {len(chunked_context)}")
     best_heads = []
@@ -527,9 +525,11 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
 
 
     # Process each chunk
-    for chunk_idx, chunk in enumerate(chunked_context):
-        print(f"Processing chunk {chunk_idx} with {len(chunk)} characters")
-        prompt = f"Context: {chunk}\nQuestion: {question}\nAnswer:"
+    for chunk_idx, chunk_token in enumerate(chunked_context):
+        print(f"Processing chunk {chunk_idx} with {len(chunk_token)} tokens")
+        # convert chunk tokens into string
+        chunk_str = tokenizer.convert_tokens_to_string(chunk_token)
+        prompt = f"Context: {chunk_str}\nQuestion: {question}\nAnswer:"
         try:
             inputs = tokenizer.encode(prompt, return_tensors='pt')
             outputs = model(inputs)
@@ -605,6 +605,10 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
         print_gpu_memory()
 
     # get the longest token array and normalize the attention scores by * len(token_arr[i])/max_len
+    if len(token_arr) == 0:
+        print("No chunks processed")
+        return [], []
+
     max_len = max([len(t) for t in token_arr])
     print(f"Normalized by max token length: {max_len}")
     for i in range(len(wholes)):
@@ -651,12 +655,12 @@ def process_context_with_chunks(context, question, tokenizer, model, token_dir, 
         print_tokens_with_scores(dataset, merged_seleted_heads, merged_tokens, "selected", file_idx, query_idx)
     print_tokens_with_scores(dataset, merged_wholes, merged_tokens, "whole", file_idx, query_idx)
 
-    return merged_wholes, merged_tokens
+    return merged_tokens, merged_wholes, merged_best_heads, merged_best_layers, merged_seleted_heads
 
 
 
 def process_file_question(dataset, query_idx, question, file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                          top_10_heads_parse=None, top_10_layers_parse=None, chunk_size=10000, overlap=50, whole_only=False):
+                          top_10_heads_parse=None, top_10_layers_parse=None, chunk_size_token=1500, overlap_token=0, whole_only=False):
     global outputs, inputs
     print(f"Processing file {file_idx} with question: {question}")
     if context.strip():
@@ -669,7 +673,13 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
     attention = None
 
     enable_chunking = False
-    if len(context) < chunk_size:
+    # init attention numpy arrays
+    attention_best_head, attention_best_layer, attention_selected_heads = None, None, None
+
+    # check if the context is too long
+    context_inputs = tokenizer.encode(context, return_tensors='pt')
+    context_tokens = tokenizer.convert_ids_to_tokens(context_inputs[0])[1:]
+    if len(context_tokens) < chunk_size_token:
         try:
             inputs = tokenizer.encode(prompt, return_tensors='pt')
             outputs = model(inputs)
@@ -688,12 +698,12 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
     if enable_chunking:
         print_gpu_memory()
         # if the context is too long, we need to chunk it
-        merged_whole, merged_tokens = process_context_with_chunks(context, question, tokenizer, model, token_dir,
+        merged_tokens, merged_whole, attention_best_head, attention_best_layer, attention_selected_heads = process_context_with_chunks(context_tokens, question, tokenizer, model, token_dir,
                                                                   attention_summary_dir,
                                                                   dataset, file_idx, query_idx,
                                                                   top_10_heads=top_10_heads_parse,
                                                                   top_10_layers=top_10_layers_parse,
-                                                                  chunk_size=chunk_size, overlap=overlap, whole_only=whole_only)
+                                                                  chunk_size_token=chunk_size_token, overlap_token=overlap_token, whole_only=whole_only)
         tokens = merged_tokens
         attention_summary = merged_whole
     else:
@@ -715,28 +725,43 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
             assert top_10_heads_parse is not None
             layer_idx, head_idx = top_10_heads_parse[0]
             best_layer = top_10_layers_parse[0]
-            print_tokens_with_attention_head(dataset, attention, tokens, layer_idx, head_idx,
+            attention_best_head = print_tokens_with_attention_head(dataset, attention, tokens, layer_idx, head_idx,
                                              question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx,
                                              c_idx=file_idx)
-            print_tokens_with_attention_layer(dataset, attention, tokens, best_layer,
+            attention_best_layer = print_tokens_with_attention_layer(dataset, attention, tokens, best_layer,
                                               question_token_length=endq_token_idx - startq_token_idx, q_idx=query_idx,
                                               c_idx=file_idx)
-            print_tokens_with_selected_attention_heads(dataset, attention, tokens, top_10_heads_parse[:5],
+            attention_selected_heads = print_tokens_with_selected_attention_heads(dataset, attention, tokens, top_10_heads_parse[:5],
                                                        question_token_length=endq_token_idx - startq_token_idx,
                                                        q_idx=query_idx, c_idx=file_idx)
+
+            print(f"Attention info for query {query_idx} and file {file_idx}: attention head shape: {attention_best_head.shape}, attention layer shape: {attention_best_layer.shape}, attention selected heads shape: {attention_selected_heads.shape}")
 
         attention_summary = print_tokens_with_attention_whole(dataset, attention, tokens,
                                                               question_token_length=endq_token_idx - startq_token_idx,
                                                               q_idx=query_idx, c_idx=file_idx)
 
-    token_file = f"{token_dir}/{dataset}_{file_idx}.json"
-    attention_summary_file = f"{attention_summary_dir}/{dataset}_{file_idx}_{query_idx}.npy"
+    token_file = f"{token_dir}/full/{dataset}_{file_idx}.json"
+    attention_summary_file = f"{attention_summary_dir}/full/{dataset}_{file_idx}_{query_idx}.npy"
 
     if query_idx == 0:
         with open(token_file, 'w') as f:
             json.dump(tokens, f)
     with open(attention_summary_file, 'wb') as f:
         np.save(f, attention_summary)
+    if not whole_only:
+        assert top_10_heads_parse is not None
+        layer_idx, head_idx = top_10_heads_parse[0]
+        best_layer = top_10_layers_parse[0]
+        attention_best_head_file = f"{attention_summary_dir}/full/{dataset}_{file_idx}_{query_idx}_layer_{layer_idx}_head_{head_idx}.npy"
+        attention_best_layer_file = f"{attention_summary_dir}/full/{dataset}_{file_idx}_{query_idx}_layer_{best_layer}.npy"
+        attention_selected_heads_file = f"{attention_summary_dir}/full/{dataset}_{file_idx}_{query_idx}_selected_heads.npy"
+        with open(attention_best_head_file, 'wb') as f:
+            np.save(f, attention_best_head)
+        with open(attention_best_layer_file, 'wb') as f:
+            np.save(f, attention_best_layer)
+        with open(attention_selected_heads_file, 'wb') as f:
+            np.save(f, attention_selected_heads)
     print_gpu_memory()
     # Explicitly delete attention and tokens to free up memory
     if inputs is not None:
@@ -754,7 +779,7 @@ def process_file_question(dataset, query_idx, question, file_idx, context, token
 
 
 
-def run_dataset_analysis(model_name, dataset, whole_only = False, chunk_size=10000, overlap=50):
+def run_dataset_analysis(model_name, dataset, whole_only = False, chunk_size_token=1500, overlap_token=0):
     # 0: <|begin_of_text|>, 17
     # 1: Context, 7
     # 2: :, 1
@@ -818,13 +843,13 @@ def run_dataset_analysis(model_name, dataset, whole_only = False, chunk_size=100
 
             # call the function to process the context per file and question
             process_file_question(dataset, query_idx, question, file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                                    top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=chunk_size, overlap=overlap, whole_only=whole_only)
+                                    top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size_token=chunk_size_token, overlap_token=overlap_token, whole_only=whole_only)
 
             # Run baseline query processing with the first question
             if query_idx == 0:
                 # process the baseline query
                 process_file_question(dataset, -1, "Please repeat the context.", file_idx, context, tokenizer, model, token_dir, attention_summary_dir,
-                                      top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size=chunk_size, overlap=overlap, whole_only=True)
+                                      top_10_heads_parse=top_10_heads_parse, top_10_layers_parse=top_10_layers_parse, chunk_size_token=chunk_size_token, overlap_token=overlap_token, whole_only=True)
 
 
     print(f"Done with {dataset} set and {len(questions)} questions")
@@ -832,7 +857,7 @@ def run_dataset_analysis(model_name, dataset, whole_only = False, chunk_size=100
 
 
 
-def run_differential_attention(model_name, dataset, chunk_size=10000, overlap=50):
+def run_differential_attention(model_name, dataset, chunk_size_token=1500, overlap_token=0):
     config_path = '../../../questions/question.json'
     with open(config_path) as f:
         data = json.load(f)
@@ -933,6 +958,6 @@ if __name__ == "__main__":
 
     # dataset = "notice"
     dataset = "paper"
-    run_dataset_analysis(model_name, dataset, chunk_size=8000, overlap=50)
+    run_dataset_analysis(model_name, dataset, chunk_size_token=1500, overlap_token=0)
     print("================= Done with dataset analysis, now starting differential attention analysis =================")
-    run_differential_attention(model_name, dataset,chunk_size=8000, overlap=50)
+    run_differential_attention(model_name, dataset,chunk_size_token=1500, overlap_token=0)

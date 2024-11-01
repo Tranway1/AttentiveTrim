@@ -7,8 +7,8 @@ config_path = '../../../../questions/question.json'
 with open(config_path) as f:
     data = json.load(f)
 
-# dataset = "notice"
-dataset = "paper"
+dataset = "notice"
+# dataset = "paper"
 file_list = data["datasets"][dataset]["list"]
 questions = data["query"][f'{dataset.upper()}_QUESTIONS']
 acc_gpt_dir = "../../../../acc/gpt"
@@ -40,15 +40,35 @@ def extract_matched_ratio(json_file):
 # Plotting function for each question
 def plot_question_accuracy(question):
     plt.figure(figsize=(10, 6))
-    series_labels = ['tr', 'trrag', 'rag']
-    colors = {'tr': 'blue', 'rag': 'green', 'trrag': 'red'}
+    budget_map = {
+        "What are the state abbreviation and ZIP code of the company?": [0.01, 0.02, 0.05, 0.10, 0.23, 0.35],
+        "What are the violation items?": [0.01, 0.04, 0.09, 0.21, 0.34],
+        "What is the civil penalty amount suggested for the probable violation?": [0.01, 0.04, 0.10, 0.21, 0.34],
+        "What is the date of the notice?": [0.01, 0.02, 0.05, 0.10, 0.22, 0.35],
+        "What is the full title of the sender in the notice?": [0.01, 0.02, 0.05, 0.10, 0.22, 0.35],
+        "What is the name of the company?": [0.01, 0.02, 0.05, 0.10, 0.22, 0.34],
+        "What is the type of violation item?": [0.01, 0.04, 0.09, 0.21, 0.34],
+        "What statutory authority is used to propose the Compliance Order?": [0.01, 0.02, 0.05, 0.11, 0.22, 0.35]
+    }
+
+
+    series_labels = ['tr', 'trrag', 'rag', 'att']
+    colors = {'tr': 'blue', 'rag': 'green', 'trrag': 'red', 'att': 'orange'}
 
     for series in series_labels:
         x_values = []
         y_values = []
-        for budget in budgets[series]:
+
+        if series == 'att':
+            cur_budgets = budget_map[question]
+        else:
+            cur_budgets = budgets[series]
+
+        for budget in cur_budgets:
             if series == 'tr':
                 acc_file = os.path.join(acc_gpt_dir, f"acc-{budget}-{dataset}_{question}-location-acc.json")
+            elif series == 'att':
+                acc_file = os.path.join(acc_gpt_dir, f"accAtt-{budget:.2f}-{dataset}_{question}-location-acc.json")
             else:
                 acc_file = os.path.join(acc_rag_dir, f"ragresults-{budget}-{dataset}_{question}-{series}-acc.json")
 
