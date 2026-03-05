@@ -1,0 +1,63 @@
+################################
+# macOS
+################################
+.DS_Store
+__MACOSX/
+
+################################
+# Python
+################################
+__pycache__/
+*.pyc
+
+################################
+# Project-level generated data
+################################
+extra_data/
+grd_loc/
+pred_att/
+questions_new/
+acc/
+src/attentivetrim/hf/test.py
+
+################################
+# system/ — keep code, ignore outputs
+################################
+system_old/
+
+system/data/
+system/data_no_cache/
+system/evaluation/
+system/pred_att/
+system/raw_data/
+system/figures_attention_html
+
+system/baselines/data/
+system/baselines/evaluation/
+system/baselines/pred_att/
+system/baselines/analysis/
+system/baselines/aitqa_full_table/
+
+system/adaptive_budget/
+system/analysis/
+system/figures/
+system/figures_complete/
+system/llama3.2_1b/
+system/qwen3_8b/
+system/qwen3_14b/
+system/reports/
+
+
+################################
+# AttentiveTrim generated data
+################################
+src/attentivetrim/data/
+src/attentivetrim/raw_data/
+src/attentivetrim/results/
+
+################################
+# Temporary / accidental files
+################################
+*copy*.json
+*.log
+*.tmp

@@ -3,14 +3,21 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
+from pathlib import Path
 
-task="test-baselines"
+
 ranges = []
-with open("../data/test_v16_inputfile100-result-What are the ba-location.json", "rb") as file:
+# question = "What is the main contribution of the paper?"
+question = "What is the authors of the paper?"
+dataset = "paper"
+output_dir =  Path("../../../system/figures/position_heatmap")
+output_dir.mkdir(parents=True, exist_ok=True)
+
+with open(f"../data/heatmap/heatmap-{dataset}_{question}-location.json", "rb") as file:
     data = file.read()
     json_obj = json.loads(data)
 
-for loc in json_obj["files"]:
+for loc in json_obj["chosen_files"]:
     minv = loc["start"]/loc["total_chars"]
     maxv = loc["end"]/loc["total_chars"]
     print("min and max:", minv, maxv)
@@ -41,7 +48,7 @@ cmap_choice = "inferno"
 heatmap = plt.imshow(frequency_matrix[np.newaxis, :], cmap=cmap_choice, aspect="auto", extent=extent)
 
 plt.xlabel("Character position")
-plt.title(json_obj["question"])
+plt.title(question)
 plt.yticks([])  # Hide y-axis ticks as they don't represent meaningful data in this context
 
 # Adding a colorbar as a legend
@@ -49,19 +56,19 @@ cbar = plt.colorbar(heatmap, orientation='vertical', pad=0.05)
 cbar.set_label('Frequency')
 
 plt.tight_layout()
-plt.savefig("../data/heatmap-"+task+".pdf")
+plt.savefig(f"{output_dir}/heatmap-{dataset}-{question}.pdf")
 
 # draw a line chart with x from 0 to 1 and y as the frequency_matrix
 plt.figure(figsize=(5, 2))
 plt.plot(bins[:-1], frequency_matrix)
 plt.xlabel("Character position")
 plt.ylabel("Frequency")
-plt.title(json_obj["question"])
+plt.title(question)
 plt.tight_layout()
-plt.savefig("../data/linechart-"+task+".pdf")
+plt.savefig(f"{output_dir}/linechart-{dataset}-{question}.pdf")
 
 # save the index and the frequency_matrix to a csv file
-np.savetxt("../data/frequency-"+task+".csv",
+np.savetxt(f"{output_dir}/frequency-{dataset}-{question}.csv",
            np.column_stack((bins[:-1] * index_range, frequency_matrix)),
            delimiter=",",
            fmt='%.3f')
